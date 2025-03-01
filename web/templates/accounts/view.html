@@ -1,0 +1,75 @@
+{{define "title"}}Account: {{.Account.Username}}{{end}}
+
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h1>Account: {{.Account.Username}}</h1>
+        <div>
+            <a href="/accounts/{{.Account.ID}}/edit" class="btn">Edit</a>
+            <a href="/accounts" class="btn btn-secondary">Back to Accounts</a>
+        </div>
+    </div>
+
+    <div class="view-details">
+        <div class="detail-row">
+            <div class="detail-label">Username</div>
+            <div class="detail-value">{{.Account.Username}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Email</div>
+            <div class="detail-value">{{.Account.Email}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Full Name</div>
+            <div class="detail-value">{{.Account.FullName}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">{{if .Account.Active}}Active{{else}}Inactive{{end}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Last Login</div>
+            <div class="detail-value">{{if .Account.LastLogin}}{{formatTime .Account.LastLogin}}{{else}}Never{{end}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Created</div>
+            <div class="detail-value">{{formatTime .Account.CreatedAt}} by {{.CreatedByName}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Updated</div>
+            <div class="detail-value">{{formatTime .Account.UpdatedAt}} by {{.UpdatedByName}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Groups</div>
+            <div class="detail-value">
+                {{if .Account.Groups}}
+                <ul class="group-list">
+                    {{range .Account.Groups}}
+                    <li><a href="/groups/{{.ID}}">{{.Name}}</a></li>
+                    {{end}}
+                </ul>
+                {{else}}
+                <p>No groups</p>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-actions">
+        <button class="btn btn-danger" 
+                hx-delete="/accounts/{{.Account.ID}}" 
+                hx-confirm="Are you sure you want to delete this account?" 
+                hx-push-url="true" 
+                hx-target="body">
+            Delete Account
+        </button>
+    </div>
+</div>
+{{end}}

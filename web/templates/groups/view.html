@@ -1,0 +1,73 @@
+{{define "title"}}Group: {{.Group.Name}}{{end}}
+
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h1>Group: {{.Group.Name}}</h1>
+        <div>
+            <a href="/groups/{{.Group.ID}}/edit" class="btn">Edit</a>
+            <a href="/groups" class="btn btn-secondary">Back to Groups</a>
+        </div>
+    </div>
+
+    <div class="view-details">
+        <div class="detail-row">
+            <div class="detail-label">Name</div>
+            <div class="detail-value">{{.Group.Name}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Description</div>
+            <div class="detail-value">{{if .Group.Description}}{{.Group.Description}}{{else}}-{{end}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Created</div>
+            <div class="detail-value">{{formatTime .Group.CreatedAt}} by {{.CreatedByName}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Updated</div>
+            <div class="detail-value">{{formatTime .Group.UpdatedAt}} by {{.UpdatedByName}}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Members</div>
+            <div class="detail-value">
+                {{if .Group.Members}}
+                <table class="nested-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Group.Members}}
+                        <tr>
+                            <td><a href="/accounts/{{.ID}}">{{.Username}}</a></td>
+                            <td>{{.FullName}}</td>
+                            <td>{{.Email}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{else}}
+                <p>No members</p>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-actions">
+        <button class="btn btn-danger" 
+                hx-delete="/groups/{{.Group.ID}}" 
+                hx-confirm="Are you sure you want to delete this group?" 
+                hx-push-url="true" 
+                hx-target="body">
+            Delete Group
+        </button>
+    </div>
+</div>
+{{end}}

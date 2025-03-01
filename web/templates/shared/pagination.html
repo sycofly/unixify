@@ -1,0 +1,45 @@
+{{define "pagination"}}
+{{if .Pagination}}
+<ul class="pagination">
+    {{if .Pagination.HasPrev}}
+    <li>
+        <a href="?page={{.Pagination.PrevPage}}&q={{.Query}}" 
+           hx-get="?page={{.Pagination.PrevPage}}&q={{.Query}}" 
+           hx-target="{{.Target}}" 
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            &laquo;
+        </a>
+    </li>
+    {{end}}
+    
+    {{range .Pagination.Pages}}
+    <li class="{{if eq . $.Pagination.CurrentPage}}active{{end}}">
+        {{if eq . $.Pagination.CurrentPage}}
+        <span>{{.}}</span>
+        {{else}}
+        <a href="?page={{.}}&q={{$.Query}}" 
+           hx-get="?page={{.}}&q={{$.Query}}" 
+           hx-target="{{$.Target}}" 
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            {{.}}
+        </a>
+        {{end}}
+    </li>
+    {{end}}
+    
+    {{if .Pagination.HasNext}}
+    <li>
+        <a href="?page={{.Pagination.NextPage}}&q={{.Query}}" 
+           hx-get="?page={{.Pagination.NextPage}}&q={{.Query}}" 
+           hx-target="{{.Target}}" 
+           hx-swap="innerHTML"
+           hx-push-url="true">
+            &raquo;
+        </a>
+    </li>
+    {{end}}
+</ul>
+{{end}}
+{{end}}

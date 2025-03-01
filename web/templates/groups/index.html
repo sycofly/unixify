@@ -1,0 +1,53 @@
+{{define "title"}}Groups{{end}}
+
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h1>Groups</h1>
+        <a href="/groups/new" class="btn">Create Group</a>
+    </div>
+
+    <div id="groups-search">
+        {{template "search" dict "Endpoint" "/groups/search" "Target" "#groups-list" "Query" .Query}}
+    </div>
+
+    <div id="groups-list">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Members</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Groups}}
+                <tr>
+                    <td>{{.Name}}</td>
+                    <td>{{if .Description}}{{truncate .Description 50}}{{else}}-{{end}}</td>
+                    <td>{{len .Members}}</td>
+                    <td>{{formatTime .CreatedAt}}</td>
+                    <td>
+                        {{template "crud_buttons" dict 
+                            "ViewURL" (printf "/groups/%s" .ID) 
+                            "EditURL" (printf "/groups/%s/edit" .ID) 
+                            "DeleteURL" (printf "/groups/%s" .ID)}}
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="5" class="text-center">No groups found</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        {{template "pagination" dict 
+            "Pagination" .Pagination 
+            "Query" .Query 
+            "Target" "#groups-list"}}
+    </div>
+</div>
+{{end}}

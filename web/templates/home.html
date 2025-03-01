@@ -1,0 +1,39 @@
+{{define "title"}}Home{{end}}
+
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h1>Welcome to Unixify</h1>
+    </div>
+    
+    <div class="dashboard">
+        <div class="dashboard-item">
+            <div class="dashboard-item-header">
+                <h2>Accounts</h2>
+                <a href="/accounts" class="btn btn-sm">View All</a>
+            </div>
+            <div class="dashboard-item-content">
+                <p class="stat">{{.TotalAccounts}} Total Accounts</p>
+                <p>Manage users with role-based access control</p>
+                <div class="dashboard-actions">
+                    <a href="/accounts/new" class="btn">Create Account</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-item">
+            <div class="dashboard-item-header">
+                <h2>Groups</h2>
+                <a href="/groups" class="btn btn-sm">View All</a>
+            </div>
+            <div class="dashboard-item-content">
+                <p class="stat">{{.TotalGroups}} Total Groups</p>
+                <p>Organize users into logical groups for easier management</p>
+                <div class="dashboard-actions">
+                    <a href="/groups/new" class="btn">Create Group</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

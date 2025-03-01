@@ -1,0 +1,55 @@
+{{define "title"}}Accounts{{end}}
+
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h1>Accounts</h1>
+        <a href="/accounts/new" class="btn">Create Account</a>
+    </div>
+
+    <div id="accounts-search">
+        {{template "search" dict "Endpoint" "/accounts/search" "Target" "#accounts-list" "Query" .Query}}
+    </div>
+
+    <div id="accounts-list">
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Full Name</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Accounts}}
+                <tr>
+                    <td>{{.Username}}</td>
+                    <td>{{.Email}}</td>
+                    <td>{{.FullName}}</td>
+                    <td>{{if .Active}}Active{{else}}Inactive{{end}}</td>
+                    <td>{{formatTime .CreatedAt}}</td>
+                    <td>
+                        {{template "crud_buttons" dict 
+                            "ViewURL" (printf "/accounts/%s" .ID) 
+                            "EditURL" (printf "/accounts/%s/edit" .ID) 
+                            "DeleteURL" (printf "/accounts/%s" .ID)}}
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="6" class="text-center">No accounts found</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        {{template "pagination" dict 
+            "Pagination" .Pagination 
+            "Query" .Query 
+            "Target" "#accounts-list"}}
+    </div>
+</div>
+{{end}}

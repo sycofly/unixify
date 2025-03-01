@@ -1,0 +1,44 @@
+{{define "title"}}{{if .Group.ID}}Edit Group{{else}}New Group{{end}}{{end}}
+
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h1>{{if .Group.ID}}Edit Group{{else}}New Group{{end}}</h1>
+        <a href="/groups" class="btn btn-secondary">Back to Groups</a>
+    </div>
+
+    <form hx-boost="true" method="POST" action="{{if .Group.ID}}/groups/{{.Group.ID}}{{else}}/groups{{end}}">
+        {{if .Group.ID}}
+        <input type="hidden" name="_method" value="PUT">
+        {{end}}
+        
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{.Group.Name}}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4">{{.Group.Description}}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Members</label>
+            <div class="checkbox-list">
+                {{range .AllAccounts}}
+                <div class="checkbox-item">
+                    <input type="checkbox" id="account_{{.ID}}" name="members[]" value="{{.ID}}" 
+                        {{range $.Group.Members}}{{if eq .ID $.ID}}checked{{end}}{{end}}>
+                    <label for="account_{{.ID}}">{{.Username}} ({{.FullName}})</label>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn">Save</button>
+            <a href="/groups" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{{end}}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unixify - {{block "title" .}}Home{{end}}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <!-- HTMX for interactive UI -->
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <!-- Adding Alpine.js for client-side interactivity where needed -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <a href="/" class="logo">Unixify</a>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/accounts">Accounts</a></li>
+                    <li><a href="/groups">Groups</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        {{if .Flash}}
+        <div class="flash {{.FlashType}}">
+            {{.Flash}}
+        </div>
+        {{end}}
+
+        {{block "content" .}}{{end}}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; {{.CurrentYear}} Unixify. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
