@@ -1,0 +1,87 @@
+<\!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Unixify</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/people">People</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/system">System</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/database">Database</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/service">Service</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="jumbotron">
+            <h1 class="display-4">Unixify - UNIX Account Management</h1>
+            <p class="lead">A registry for UNIX account UIDs and Group GIDs</p>
+            <hr class="my-4">
+            <p>Use the navigation above to manage different types of accounts and groups.</p>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">People</h5>
+                        <p class="card-text">Manage people accounts and groups.</p>
+                        <a href="/people" class="btn btn-primary">Go to People</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">System</h5>
+                        <p class="card-text">Manage system accounts and groups.</p>
+                        <a href="/system" class="btn btn-primary">Go to System</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Database</h5>
+                        <p class="card-text">Manage database accounts and groups.</p>
+                        <a href="/database" class="btn btn-primary">Go to Database</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Service</h5>
+                        <p class="card-text">Manage service accounts and groups.</p>
+                        <a href="/service" class="btn btn-primary">Go to Service</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Unixify</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {{ if eq .section "people" }}active{{ end }}" href="/people">People</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ if eq .section "system" }}active{{ end }}" href="/system">System</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ if eq .section "database" }}active{{ end }}" href="/database">Database</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ if eq .section "service" }}active{{ end }}" href="/service">Service</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">{{ title .section }} Management</h1>
+
+        <ul class="nav nav-tabs" id="sectionTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="accounts-tab" data-bs-toggle="tab" data-bs-target="#accounts" type="button" role="tab" aria-controls="accounts" aria-selected="true">Accounts</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="groups-tab" data-bs-toggle="tab" data-bs-target="#groups" type="button" role="tab" aria-controls="groups" aria-selected="false">Groups</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="sectionTabsContent">
+            <div class="tab-pane fade show active p-3" id="accounts" role="tabpanel" aria-labelledby="accounts-tab">
+                <div class="d-flex justify-content-between mb-3">
+                    <h2>{{ title .section }} Accounts</h2>
+                    <button type="button" class="btn btn-primary" id="newAccountBtn">New Account</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="accountsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>UID</th>
+                                <th>Username</th>
+                                <th>Primary Group</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsTableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade p-3" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+                <div class="d-flex justify-content-between mb-3">
+                    <h2>{{ title .section }} Groups</h2>
+                    <button type="button" class="btn btn-primary" id="newGroupBtn">New Group</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="groupsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>GID</th>
+                                <th>Groupname</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupsTableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Modal -->
+    <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="accountModalLabel">Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="accountForm">
+                        <input type="hidden" id="accountId">
+                        <div class="mb-3">
+                            <label for="uid" class="form-label">UID</label>
+                            <input type="number" class="form-control" id="uid" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="primaryGroupID" class="form-label">Primary Group</label>
+                            <select class="form-control" id="primaryGroupID">
+                                <option value="">None</option>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <input type="hidden" id="accountType" value="{{ .section }}">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveAccountBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Modal -->
+    <div class="modal fade" id="groupModal" tabindex="-1" aria-labelledby="groupModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="groupModalLabel">Group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="groupForm">
+                        <input type="hidden" id="groupId">
+                        <div class="mb-3">
+                            <label for="gid" class="form-label">GID</label>
+                            <input type="number" class="form-control" id="gid" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="groupname" class="form-label">Groupname</label>
+                            <input type="text" class="form-control" id="groupname" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="groupDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="groupDescription" rows="3"></textarea>
+                        </div>
+                        <input type="hidden" id="groupType" value="{{ .section }}">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveGroupBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/section.js"></script>
+</body>
+</html>
