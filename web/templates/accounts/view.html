@@ -1,6 +1,4 @@
-{{define "title"}}Account: {{.Account.Username}}{{end}}
-
-{{define "content"}}
+{{define "accounts/view.html"}}
 <div class="card">
     <div class="card-header">
         <h1>Account: {{.Account.Username}}</h1>
@@ -72,4 +70,10 @@
         </button>
     </div>
 </div>
+{{end}}
+
+{{define "title"}}Account: {{.Account.Username}}{{end}}
+
+{{define "content"}}
+{{template "accounts/view.html" .}}
 {{end}}

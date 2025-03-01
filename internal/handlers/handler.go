@@ -88,6 +88,8 @@ func (h *Handler) loadTemplates() {
 		for _, file := range files {
 			if file != layoutPath {
 				filesToParse = append(filesToParse, file)
+				// Print each file we're parsing for debugging
+				log.Printf("Found template file to parse: %s", file)
 			}
 		}
 
@@ -128,6 +130,355 @@ func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 		}
 	}
 	log.Printf("Available templates: %v", templates)
+	
+	// Special case for accounts/view.html
+	if name == "accounts/view.html" {
+		dataMap, _ := data.(map[string]interface{})
+		if accountData, ok := dataMap["Account"]; ok {
+			log.Printf("Using special handler for accounts/view.html")
+			
+			// Cast to account struct
+			var account models.Account
+			switch a := accountData.(type) {
+			case models.Account:
+				account = a
+			case *models.Account:
+				account = *a
+			default:
+				log.Printf("Unknown account type: %T", accountData)
+				http.Error(w, "Internal Server Error: Invalid account data type", http.StatusInternalServerError)
+				return
+			}
+			
+			// Get creator and updater names
+			createdByName := "System"
+			if val, ok := dataMap["CreatedByName"].(string); ok {
+				createdByName = val
+			}
+			
+			updatedByName := "System"
+			if val, ok := dataMap["UpdatedByName"].(string); ok {
+				updatedByName = val
+			}
+			
+			// Format group data
+			groupList := "<p>No groups</p>"
+			if len(account.Groups) > 0 {
+				groupList = "<ul class=\"group-list\">"
+				for _, group := range account.Groups {
+					groupList += fmt.Sprintf("<li><a href=\"/groups/%s\">%s</a></li>", 
+						group.ID, group.Name)
+				}
+				groupList += "</ul>"
+			}
+			
+			// Format date/time
+			createdAt := account.CreatedAt.Format("Jan 02, 2006 3:04 PM")
+			updatedAt := account.UpdatedAt.Format("Jan 02, 2006 3:04 PM")
+			
+			// Format last login
+			lastLogin := "Never"
+			if account.LastLogin != nil {
+				lastLogin = account.LastLogin.Format("Jan 02, 2006 3:04 PM")
+			}
+			
+			// Format status
+			status := "Inactive"
+			if account.Active {
+				status = "Active"
+			}
+			
+			// Generate HTML directly
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account: %s - Unixify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <a href="/" class="logo">Unixify</a>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/accounts">Accounts</a></li>
+                    <li><a href="/groups">Groups</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1>Account: %s</h1>
+                <div>
+                    <a href="/accounts/%s/edit" class="btn">Edit</a>
+                    <a href="/accounts" class="btn btn-secondary">Back to Accounts</a>
+                </div>
+            </div>
+        
+            <div class="view-details">
+                <div class="detail-row">
+                    <div class="detail-label">Username</div>
+                    <div class="detail-value">%s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">%s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Full Name</div>
+                    <div class="detail-value">%s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">%s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Last Login</div>
+                    <div class="detail-value">%s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Created</div>
+                    <div class="detail-value">%s by %s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Updated</div>
+                    <div class="detail-value">%s by %s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Groups</div>
+                    <div class="detail-value">
+                        %s
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-actions">
+                <button class="btn btn-danger" 
+                        hx-delete="/accounts/%s" 
+                        hx-confirm="Are you sure you want to delete this account?" 
+                        hx-push-url="true" 
+                        hx-target="body">
+                    Delete Account
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; %d Unixify. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+`, 
+				account.Username, 
+				account.Username, 
+				account.ID,
+				account.Username,
+				account.Email,
+				account.FullName, 
+				status,
+				lastLogin,
+				createdAt, createdByName,
+				updatedAt, updatedByName,
+				groupList,
+				account.ID,
+				time.Now().Year())))
+				
+			return
+		}
+	}
+	
+	// Special case for groups/view.html
+	if name == "groups/view.html" {
+		dataMap, _ := data.(map[string]interface{})
+		if groupData, ok := dataMap["Group"]; ok {
+			log.Printf("Using special handler for groups/view.html")
+			
+			// Cast to group struct
+			var group models.Group
+			switch g := groupData.(type) {
+			case models.Group:
+				group = g
+			case *models.Group:
+				group = *g
+			default:
+				log.Printf("Unknown group type: %T", groupData)
+				http.Error(w, "Internal Server Error: Invalid group data type", http.StatusInternalServerError)
+				return
+			}
+			
+			// Get creator and updater names
+			createdByName := "System"
+			if val, ok := dataMap["CreatedByName"].(string); ok {
+				createdByName = val
+			}
+			
+			updatedByName := "System"
+			if val, ok := dataMap["UpdatedByName"].(string); ok {
+				updatedByName = val
+			}
+			
+			// Format description
+			description := group.Description
+			if description == "" {
+				description = "-"
+			}
+			
+			// Process members data
+			membersTable := "<p>No members</p>"
+			if len(group.Members) > 0 {
+				membersTable = `<table class="nested-table">
+					<thead>
+						<tr>
+							<th>Username</th>
+							<th>Full Name</th>
+							<th>Email</th>
+						</tr>
+					</thead>
+					<tbody>`
+					
+				for _, member := range group.Members {
+					membersTable += fmt.Sprintf(`
+					<tr>
+						<td><a href="/accounts/%s">%s</a></td>
+						<td>%s</td>
+						<td>%s</td>
+					</tr>`, 
+					member.ID, member.Username, member.FullName, member.Email)
+				}
+				
+				membersTable += `
+					</tbody>
+				</table>`
+			}
+			
+			// Format date/time
+			createdAt := group.CreatedAt.Format("Jan 02, 2006 3:04 PM")
+			updatedAt := group.UpdatedAt.Format("Jan 02, 2006 3:04 PM")
+			
+			// Generate HTML directly
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group: %s - Unixify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <a href="/" class="logo">Unixify</a>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/accounts">Accounts</a></li>
+                    <li><a href="/groups">Groups</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1>Group: %s</h1>
+                <div>
+                    <a href="/groups/%s/edit" class="btn">Edit</a>
+                    <a href="/groups" class="btn btn-secondary">Back to Groups</a>
+                </div>
+            </div>
+        
+            <div class="view-details">
+                <div class="detail-row">
+                    <div class="detail-label">Name</div>
+                    <div class="detail-value">%s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">%s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Created</div>
+                    <div class="detail-value">%s by %s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Updated</div>
+                    <div class="detail-value">%s by %s</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Members</div>
+                    <div class="detail-value">
+                        %s
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-actions">
+                <button class="btn btn-danger" 
+                        hx-delete="/groups/%s" 
+                        hx-confirm="Are you sure you want to delete this group?" 
+                        hx-push-url="true" 
+                        hx-target="body">
+                    Delete Group
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; %d Unixify. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+`, 
+				group.Name,
+				group.Name,
+				group.ID,
+				group.Name,
+				description,
+				createdAt, createdByName,
+				updatedAt, updatedByName,
+				membersTable,
+				group.ID,
+				time.Now().Year())))
+				
+			return
+		}
+	}
 	
 	// Add default CurrentYear if not present
 	dataMap, ok := data.(map[string]interface{})
@@ -600,331 +951,6 @@ func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 </body>
 </html>
 `, query, tableRows, time.Now().Year())))
-	} else if name == "accounts/view.html" {
-		// Handle account view template
-		account, ok := dataMap["Account"].(models.Account)
-		if !ok {
-			log.Printf("Error: Failed to convert Account to proper type")
-			http.Error(w, "Internal Server Error: Account data not available", http.StatusInternalServerError)
-			return
-		}
-		
-		createdByName := "System"
-		if val, ok := dataMap["CreatedByName"].(string); ok {
-			createdByName = val
-		}
-		
-		updatedByName := "System"
-		if val, ok := dataMap["UpdatedByName"].(string); ok {
-			updatedByName = val
-		}
-		
-		// Process group data
-		groupList := ""
-		if len(account.Groups) > 0 {
-			groupList = "<ul class=\"group-list\">"
-			for _, group := range account.Groups {
-				groupList += fmt.Sprintf("<li><a href=\"/groups/%s\">%s</a></li>", 
-					group.ID, group.Name)
-			}
-			groupList += "</ul>"
-		} else {
-			groupList = "<p>No groups</p>"
-		}
-		
-		// Format date/time
-		createdAt := account.CreatedAt.Format("Jan 02, 2006 3:04 PM")
-		updatedAt := account.UpdatedAt.Format("Jan 02, 2006 3:04 PM")
-		
-		// Format last login
-		lastLogin := "Never"
-		if account.LastLogin != nil {
-			lastLogin = account.LastLogin.Format("Jan 02, 2006 3:04 PM")
-		}
-		
-		// Format status
-		status := "Inactive"
-		if account.Active {
-			status = "Active"
-		}
-		
-		w.Write([]byte(fmt.Sprintf(`
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account: %s - Unixify</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
-</head>
-<body>
-    <header>
-        <nav>
-            <div class="container">
-                <a href="/" class="logo">Unixify</a>
-                <ul class="nav-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/accounts">Accounts</a></li>
-                    <li><a href="/groups">Groups</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
-
-    <main class="container">
-        <div class="card">
-            <div class="card-header">
-                <h1>Account: %s</h1>
-                <div>
-                    <a href="/accounts/%s/edit" class="btn">Edit</a>
-                    <a href="/accounts" class="btn btn-secondary">Back to Accounts</a>
-                </div>
-            </div>
-        
-            <div class="view-details">
-                <div class="detail-row">
-                    <div class="detail-label">Username</div>
-                    <div class="detail-value">%s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Email</div>
-                    <div class="detail-value">%s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Full Name</div>
-                    <div class="detail-value">%s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Status</div>
-                    <div class="detail-value">%s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Last Login</div>
-                    <div class="detail-value">%s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Created</div>
-                    <div class="detail-value">%s by %s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Updated</div>
-                    <div class="detail-value">%s by %s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Groups</div>
-                    <div class="detail-value">
-                        %s
-                    </div>
-                </div>
-            </div>
-            
-            <div class="detail-actions">
-                <button class="btn btn-danger" 
-                        hx-delete="/accounts/%s" 
-                        hx-confirm="Are you sure you want to delete this account?" 
-                        hx-push-url="true" 
-                        hx-target="body">
-                    Delete Account
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; %d Unixify. All rights reserved.</p>
-        </div>
-    </footer>
-</body>
-</html>
-`, 
-		account.Username, 
-		account.Username, 
-		account.ID,
-		account.Username,
-		account.Email,
-		account.FullName, 
-		status,
-		lastLogin,
-		createdAt, createdByName,
-		updatedAt, updatedByName,
-		groupList,
-		account.ID,
-		time.Now().Year())))
-
-	} else if name == "groups/view.html" {
-		// Handle group view template
-		group, ok := dataMap["Group"].(models.Group)
-		if !ok {
-			val, ok := dataMap["Group"].(*models.Group)
-			if !ok {
-				log.Printf("Error: Failed to convert Group to proper type: %T", dataMap["Group"])
-				http.Error(w, "Internal Server Error: Group data not available", http.StatusInternalServerError)
-				return
-			}
-			// Use the pointer value
-			group = *val
-		}
-		
-		createdByName := "System"
-		if val, ok := dataMap["CreatedByName"].(string); ok {
-			createdByName = val
-		}
-		
-		updatedByName := "System"
-		if val, ok := dataMap["UpdatedByName"].(string); ok {
-			updatedByName = val
-		}
-		
-		// Format description
-		description := group.Description
-		if description == "" {
-			description = "-"
-		}
-		
-		// Process members data
-		membersTable := ""
-		if len(group.Members) > 0 {
-			membersTable = `
-			<table class="nested-table">
-				<thead>
-					<tr>
-						<th>Username</th>
-						<th>Full Name</th>
-						<th>Email</th>
-					</tr>
-				</thead>
-				<tbody>`
-				
-			for _, member := range group.Members {
-				membersTable += fmt.Sprintf(`
-				<tr>
-					<td><a href="/accounts/%s">%s</a></td>
-					<td>%s</td>
-					<td>%s</td>
-				</tr>`, 
-				member.ID, member.Username, member.FullName, member.Email)
-			}
-			
-			membersTable += `
-				</tbody>
-			</table>`
-		} else {
-			membersTable = "<p>No members</p>"
-		}
-		
-		// Format date/time
-		createdAt := group.CreatedAt.Format("Jan 02, 2006 3:04 PM")
-		updatedAt := group.UpdatedAt.Format("Jan 02, 2006 3:04 PM")
-		
-		w.Write([]byte(fmt.Sprintf(`
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Group: %s - Unixify</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
-</head>
-<body>
-    <header>
-        <nav>
-            <div class="container">
-                <a href="/" class="logo">Unixify</a>
-                <ul class="nav-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/accounts">Accounts</a></li>
-                    <li><a href="/groups">Groups</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
-
-    <main class="container">
-        <div class="card">
-            <div class="card-header">
-                <h1>Group: %s</h1>
-                <div>
-                    <a href="/groups/%s/edit" class="btn">Edit</a>
-                    <a href="/groups" class="btn btn-secondary">Back to Groups</a>
-                </div>
-            </div>
-        
-            <div class="view-details">
-                <div class="detail-row">
-                    <div class="detail-label">Name</div>
-                    <div class="detail-value">%s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Description</div>
-                    <div class="detail-value">%s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Created</div>
-                    <div class="detail-value">%s by %s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Updated</div>
-                    <div class="detail-value">%s by %s</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Members</div>
-                    <div class="detail-value">
-                        %s
-                    </div>
-                </div>
-            </div>
-            
-            <div class="detail-actions">
-                <button class="btn btn-danger" 
-                        hx-delete="/groups/%s" 
-                        hx-confirm="Are you sure you want to delete this group?" 
-                        hx-push-url="true" 
-                        hx-target="body">
-                    Delete Group
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; %d Unixify. All rights reserved.</p>
-        </div>
-    </footer>
-</body>
-</html>
-`, 
-		group.Name,
-		group.Name,
-		group.ID,
-		group.Name,
-		description,
-		createdAt, createdByName,
-		updatedAt, updatedByName,
-		membersTable,
-		group.ID,
-		time.Now().Year())))
-		
 	} else {
 		// For other templates, try to use the template system
 		log.Printf("Trying to render template: %s", name)

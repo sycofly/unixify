@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -166,7 +167,10 @@ func (h *Handler) ViewAccount(w http.ResponseWriter, r *http.Request) {
 	// Get creator and updater names
 	createdByName := "System" // Placeholder, should look up username
 	updatedByName := "System" // Placeholder, should look up username
-
+	
+	// Log for debugging
+	log.Printf("Account data to render: %+v", account)
+	
 	// Render template
 	h.render(w, "accounts/view.html", map[string]interface{}{
 		"Account":       account,
