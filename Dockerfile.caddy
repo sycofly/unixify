@@ -1,0 +1,8 @@
+FROM docker.io/library/caddy:2-alpine
+
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY web-build /srv
+
+EXPOSE 80
+
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]

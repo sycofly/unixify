@@ -29,7 +29,7 @@ WORKDIR /app
 COPY --from=builder /app/unixify /app/unixify
 
 # Copy web templates and static files
-COPY --from=builder /app/web /app/web
+COPY ./web-build /app/web
 
 # Expose port
 EXPOSE 8080

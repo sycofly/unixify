@@ -10,6 +10,8 @@ The application provides a web interface for managing UNIX accounts and groups w
 2. Web interface with four sections: People, System, Database, and Service
 3. Complete audit log system for all operations
 4. Full RESTful API for all operations
+5. JWT-based authentication with optional TOTP 2FA
+6. Light/dark mode theme switching
 
 ## Account/Group Types and UID/GID Ranges
 
@@ -26,6 +28,8 @@ The application provides a web interface for managing UNIX accounts and groups w
 - Assign/remove users from groups
 - View detailed audit logs of all system events
 - Search by UID, GID, username, or groupname
+- User authentication with optional TOTP 2FA
+- Theme switching (light/dark mode)
 
 ## Development Commands
 
@@ -51,14 +55,23 @@ podman-compose down
 
 # View application logs
 podman logs uno-861-acc-man_unixify_1
+
+# View specific log entries
+podman logs uno-861-acc-man_unixify_1 | grep "ERROR"
+
+# Run a standalone frontend with Caddy (for testing UI changes)
+podman build -t unixify-caddy -f Dockerfile.caddy .
+podman run -d -p 8081:80 --name unixify-caddy unixify-caddy
 ```
 
 ## Container Notes
 
-- The application runs on port 8080
+- The main application runs on port 8080
+- The frontend-only container runs on port 8081
 - Templates are stored in `/app/web/templates/`
 - Static assets are in `/app/web/static/`
 - Do NOT use volume mounts that override the container's web directory
+- Use custom frontend container with Caddy for UI-only changes
 
 ## Tech Stack
 
@@ -66,4 +79,24 @@ podman logs uno-861-acc-man_unixify_1
 - PostgreSQL database
 - HTML/CSS/JavaScript frontend
 - RESTful API backend
+- JWT-based authentication
+- Google Authenticator TOTP support
+- Theme switching with CSS variables
 - Audit logging for all operations
+
+## Authentication System
+
+The application includes a comprehensive authentication system:
+- JWT token-based authentication
+- Password hashing with bcrypt
+- Optional TOTP second factor with Google Authenticator
+- Protected API routes with middleware
+- User profiles and password management
+
+## Theming System
+
+The application supports light and dark themes:
+- CSS variables for theming
+- Theme toggle button on the home page
+- Theme preference stored in localStorage
+- System preference detection via `prefers-color-scheme`

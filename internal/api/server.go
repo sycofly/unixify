@@ -110,67 +110,72 @@ func LoggerMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 
 // initRoutes initializes the API routes
 func (s *Server) initRoutes() {
+	// Authentication middleware
+	authMiddleware := auth.NewService(*s.config).AuthMiddleware()
+
 	// API routes
 	api := s.router.Group("/api")
 	{
-		// Health check
+		// Health check (public)
 		api.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
 		})
 
-		// Account routes
-		accounts := api.Group("/accounts")
+		// Protected API routes - all other routes require authentication
+		protected := api.Group("/")
+		protected.Use(authMiddleware)
 		{
-			accounts.GET("", s.handler.GetAllAccounts)
-			accounts.GET("/:id", s.handler.GetAccount)
-			accounts.POST("", s.handler.CreateAccount)
-			accounts.PUT("/:id", s.handler.UpdateAccount)
-			accounts.DELETE("/:id", s.handler.DeleteAccount)
-			accounts.GET("/uid/:uid", s.handler.GetAccountByUID)
-			accounts.GET("/username/:username", s.handler.GetAccountByUsername)
-			accounts.GET("/:id/groups", s.handler.GetAccountGroups)
-		}
+			// Account routes
+			accounts := protected.Group("/accounts")
+			{
+				accounts.GET("", s.handler.GetAllAccounts)
+				accounts.GET("/:id", s.handler.GetAccount)
+				accounts.POST("", s.handler.CreateAccount)
+				accounts.PUT("/:id", s.handler.UpdateAccount)
+				accounts.DELETE("/:id", s.handler.DeleteAccount)
+				accounts.GET("/uid/:uid", s.handler.GetAccountByUID)
+				accounts.GET("/username/:username", s.handler.GetAccountByUsername)
+				accounts.GET("/:id/groups", s.handler.GetAccountGroups)
+			}
 
-		// Group routes
-		groups := api.Group("/groups")
-		{
-			groups.GET("", s.handler.GetAllGroups)
-			groups.GET("/:id", s.handler.GetGroup)
-			groups.POST("", s.handler.CreateGroup)
-			groups.PUT("/:id", s.handler.UpdateGroup)
-			groups.DELETE("/:id", s.handler.DeleteGroup)
-			groups.GET("/gid/:gid", s.handler.GetGroupByGID)
-			groups.GET("/groupname/:groupname", s.handler.GetGroupByGroupname)
-			groups.GET("/:id/accounts", s.handler.GetGroupMembers)
-		}
+			// Group routes
+			groups := protected.Group("/groups")
+			{
+				groups.GET("", s.handler.GetAllGroups)
+				groups.GET("/:id", s.handler.GetGroup)
+				groups.POST("", s.handler.CreateGroup)
+				groups.PUT("/:id", s.handler.UpdateGroup)
+				groups.DELETE("/:id", s.handler.DeleteGroup)
+				groups.GET("/gid/:gid", s.handler.GetGroupByGID)
+				groups.GET("/groupname/:groupname", s.handler.GetGroupByGroupname)
+				groups.GET("/:id/accounts", s.handler.GetGroupMembers)
+			}
 
-		// Membership routes
-		membership := api.Group("/memberships")
-		{
-			membership.POST("", s.handler.AssignAccountToGroup)
-			membership.DELETE("", s.handler.RemoveAccountFromGroup)
-		}
+			// Membership routes
+			membership := protected.Group("/memberships")
+			{
+				membership.POST("", s.handler.AssignAccountToGroup)
+				membership.DELETE("", s.handler.RemoveAccountFromGroup)
+			}
 
-		// Search routes
-		search := api.Group("/search")
-		{
-			search.GET("/accounts", s.handler.SearchAccounts)
-			search.GET("/groups", s.handler.SearchGroups)
-		}
+			// Search routes
+			search := protected.Group("/search")
+			{
+				search.GET("/accounts", s.handler.SearchAccounts)
+				search.GET("/groups", s.handler.SearchGroups)
+			}
 
-		// Audit routes
-		audit := api.Group("/audit")
-		{
-			audit.GET("", s.handler.GetAuditEntries)
-			audit.GET("/:id", s.handler.GetAuditEntry)
+			// Audit routes
+			audit := protected.Group("/audit")
+			{
+				audit.GET("", s.handler.GetAuditEntries)
+				audit.GET("/:id", s.handler.GetAuditEntry)
+			}
 		}
 	}
 
 	// Auth handler instance
 	authHandler := handlers.NewAuthHandler(s.db, auth.NewService(*s.config), s.repo)
-	
-	// Authentication middleware
-	authMiddleware := auth.NewService(*s.config).AuthMiddleware()
 	
 	// Auth routes
 	authRoutes := s.router.Group("/api/auth")
@@ -229,22 +234,27 @@ func (s *Server) initRoutes() {
 		})
 	})
 	
-	// UI Routes
-	s.router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"title": "Unixify - Account Management",
-		})
-	})
-
-	// Section routes
-	sections := []string{"people", "system", "database", "service"}
-	for _, section := range sections {
-		s.router.GET("/"+section, func(c *gin.Context) {
-			c.HTML(http.StatusOK, "section.html", gin.H{
-				"title":   "Unixify - " + section,
-				"section": section,
+	// Protected UI Routes - require authentication
+	protectedUI := s.router.Group("/")
+	protectedUI.Use(authMiddleware)
+	{
+		protectedUI.GET("/", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "index.html", gin.H{
+				"title": "Unixify - Account Management",
 			})
 		})
+
+		// Section routes
+		sections := []string{"people", "system", "database", "service"}
+		for _, section := range sections {
+			section := section // Create a new variable to avoid closure issues
+			protectedUI.GET("/"+section, func(c *gin.Context) {
+				c.HTML(http.StatusOK, "section.html", gin.H{
+					"title":   "Unixify - " + section,
+					"section": section,
+				})
+			})
+		}
 	}
 }
 

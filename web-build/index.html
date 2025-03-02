@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body data-requires-auth="true">
-    <!-- Standalone theme toggle button -->
-    <button id="theme-toggle" class="btn btn-warning" style="position: fixed; top: 15px; right: 15px; z-index: 1050;" title="Toggle dark/light mode">
+    <!-- ADDED THEME BUTTON -->
+    <button id="fixed-theme-toggle" class="btn btn-warning" style="position: fixed; top: 15px; right: 15px; z-index: 9999;" title="Toggle dark/light mode">
         <i class="bi bi-moon-stars-fill"></i> 
         Theme
     </button>
@@ -187,14 +187,104 @@
 
     <footer class="bg-light py-3 mt-5">
         <div class="container text-center">
-            <p class="text-muted mb-0">Unixify &copy; 2025 - A UNIX Team Management System</p>
+            <p class="text-muted mb-0" id="footer-text">Unixify &copy; 2025 - A UNIX Team Management System</p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Direct inline script for theme and footer -->
+    <script>
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Direct inline script loaded");
+            
+            // Force update the footer text
+            const footerText = document.getElementById('footer-text');
+            if (footerText) {
+                footerText.textContent = 'Unixify © 2025 - A UNIX Team Management System';
+                console.log("Footer text updated");
+            }
+            
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('fixed-theme-toggle');
+            if (themeToggle) {
+                console.log("Theme toggle button found");
+                
+                // Initialize theme from localStorage
+                let currentTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                updateThemeButton(currentTheme);
+                
+                // Add click event to toggle theme
+                themeToggle.addEventListener('click', function() {
+                    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', currentTheme);
+                    localStorage.setItem('theme', currentTheme);
+                    updateThemeButton(currentTheme);
+                    console.log("Theme toggled to:", currentTheme);
+                });
+            } else {
+                console.log("Theme toggle button NOT found");
+                
+                // Create a button if not found
+                const newThemeBtn = document.createElement('button');
+                newThemeBtn.id = 'new-theme-toggle';
+                newThemeBtn.className = 'btn btn-danger';
+                newThemeBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i> Theme';
+                newThemeBtn.title = 'Toggle dark/light mode';
+                newThemeBtn.style.position = 'fixed';
+                newThemeBtn.style.top = '15px';
+                newThemeBtn.style.right = '15px';
+                newThemeBtn.style.zIndex = '9999';
+                document.body.appendChild(newThemeBtn);
+                
+                console.log("Created new theme button");
+                
+                // Initialize theme from localStorage for the new button
+                let currentTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                
+                // Add click event to the new button
+                newThemeBtn.addEventListener('click', function() {
+                    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', currentTheme);
+                    localStorage.setItem('theme', currentTheme);
+                    
+                    if (currentTheme === 'dark') {
+                        newThemeBtn.innerHTML = '<i class="bi bi-sun-fill"></i> Light';
+                        newThemeBtn.classList.remove('btn-danger');
+                        newThemeBtn.classList.add('btn-light');
+                    } else {
+                        newThemeBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i> Theme';
+                        newThemeBtn.classList.remove('btn-light');
+                        newThemeBtn.classList.add('btn-danger');
+                    }
+                    
+                    console.log("Theme toggled to:", currentTheme);
+                });
+            }
+            
+            function updateThemeButton(theme) {
+                if (theme === 'dark') {
+                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i> Light';
+                    themeToggle.classList.remove('btn-warning');
+                    themeToggle.classList.add('btn-light');
+                } else {
+                    themeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i> Theme';
+                    themeToggle.classList.remove('btn-light');
+                    themeToggle.classList.add('btn-warning');
+                }
+            }
+        });
+    </script>
+    
+    <!-- Keep the original scripts for compatibility -->
+    <script src="/static/js/init.js"></script>
     <script src="/static/js/main.js"></script>
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/theme.js"></script>
     <script src="/static/js/theme_test.js"></script>
+    <script src="/static/js/debug.js"></script>
 </body>
 </html>

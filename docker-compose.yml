@@ -23,7 +23,7 @@ services:
       - STATIC_PATH=/app/web/static
     restart: unless-stopped
     # volumes:
-    #   - /tmp/unixify-web:/app/web  # Mount the web directory from an absolute path
+    #   - ./web:/app/web  # Mount the web directory from the current directory
 
   postgres:
     image: docker.io/library/postgres:16-alpine
