@@ -50,22 +50,23 @@ func ValidateUIDForType(uid int, accountType models.AccountType) error {
 		return fmt.Errorf("UID cannot be negative")
 	}
 
+	// Check if UID is outside of recommended range and return a warning-type error
 	switch accountType {
 	case models.AccountTypePeople:
 		if uid < MinUserUID || uid > MaxUserUID {
-			return fmt.Errorf("people account UID must be between %d and %d", MinUserUID, MaxUserUID)
+			return fmt.Errorf("WARNING: People account UID %d is outside recommended range (%d-%d)", uid, MinUserUID, MaxUserUID)
 		}
 	case models.AccountTypeSystem:
 		if uid < MinSystemUID || uid > MaxSystemUID {
-			return fmt.Errorf("system account UID must be between %d and %d", MinSystemUID, MaxSystemUID)
+			return fmt.Errorf("WARNING: System account UID %d is outside recommended range (%d-%d)", uid, MinSystemUID, MaxSystemUID)
 		}
 	case models.AccountTypeService:
 		if uid < MinServiceUID || uid > MaxServiceUID {
-			return fmt.Errorf("service account UID must be between %d and %d", MinServiceUID, MaxServiceUID)
+			return fmt.Errorf("WARNING: Service account UID %d is outside recommended range (%d-%d)", uid, MinServiceUID, MaxServiceUID)
 		}
 	case models.AccountTypeDatabase:
 		if uid < MinDatabaseUID || uid > MaxDatabaseUID {
-			return fmt.Errorf("database account UID must be between %d and %d", MinDatabaseUID, MaxDatabaseUID)
+			return fmt.Errorf("WARNING: Database account UID %d is outside recommended range (%d-%d)", uid, MinDatabaseUID, MaxDatabaseUID)
 		}
 	default:
 		return fmt.Errorf("invalid account type: %s", accountType)
@@ -94,22 +95,23 @@ func ValidateGIDForType(gid int, groupType models.GroupType) error {
 		return fmt.Errorf("GID cannot be negative")
 	}
 
+	// Check if GID is outside of recommended range and return a warning-type error
 	switch groupType {
 	case models.GroupTypePeople:
 		if gid < MinUserGID || gid > MaxUserGID {
-			return fmt.Errorf("people group GID must be between %d and %d", MinUserGID, MaxUserGID)
+			return fmt.Errorf("WARNING: People group GID %d is outside recommended range (%d-%d)", gid, MinUserGID, MaxUserGID)
 		}
 	case models.GroupTypeSystem:
 		if gid < MinSystemGID || gid > MaxSystemGID {
-			return fmt.Errorf("system group GID must be between %d and %d", MinSystemGID, MaxSystemGID)
+			return fmt.Errorf("WARNING: System group GID %d is outside recommended range (%d-%d)", gid, MinSystemGID, MaxSystemGID)
 		}
 	case models.GroupTypeService:
 		if gid < MinServiceGID || gid > MaxServiceGID {
-			return fmt.Errorf("service group GID must be between %d and %d", MinServiceGID, MaxServiceGID)
+			return fmt.Errorf("WARNING: Service group GID %d is outside recommended range (%d-%d)", gid, MinServiceGID, MaxServiceGID)
 		}
 	case models.GroupTypeDatabase:
 		if gid < MinDatabaseGID || gid > MaxDatabaseGID {
-			return fmt.Errorf("database group GID must be between %d and %d", MinDatabaseGID, MaxDatabaseGID)
+			return fmt.Errorf("WARNING: Database group GID %d is outside recommended range (%d-%d)", gid, MinDatabaseGID, MaxDatabaseGID)
 		}
 	default:
 		return fmt.Errorf("invalid group type: %s", groupType)

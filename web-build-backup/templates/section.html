@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/static/css/main.css">
 </head>
-<body class="section-{{ .section }}">
+<body class="section-{{ .section }}" data-requires-auth="true">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/"><i class="bi bi-person-badge"></i> Unixify</a>
@@ -95,50 +95,6 @@
     </div>
 
     <div class="container mt-4">
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-light py-3">
-                <h2 class="fs-5 mb-0">UID/GID Range Reference</h2>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-2">
-                    These ranges are guidelines to help organize accounts and groups but are not strictly enforced.
-                    Duplicates will be shown with a red background on the form.
-                </p>
-                <div class="table-responsive">
-                    <table class="table table-sm border-0 mb-0">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Account UID Range</th>
-                                <th>Group GID Range</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><span class="badge bg-primary">People</span></td>
-                                <td>1000-60000</td>
-                                <td>1000-60000</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-secondary">System</span></td>
-                                <td>9000-9100</td>
-                                <td>9000-9100</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-info">Database</span></td>
-                                <td>70000-79999</td>
-                                <td>70000-79999</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-success">Service</span></td>
-                                <td>60001-65535</td>
-                                <td>60001-65535</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
         
         <h1 class="mb-4 section-header">
             {{ if eq .section "people" }}
@@ -323,19 +279,18 @@
                         <input type="hidden" id="accountId">
                         <div class="mb-3">
                             <label for="uid" class="form-label">UID</label>
-                            <input type="number" class="form-control" id="uid" required onchange="validateUID()" onblur="validateUID()">
+                            <input type="number" class="form-control" id="uid" required>
                             <div id="uidHelp" class="form-text">
                                 {{ if eq .section "people" }}
-                                    Recommended range for People account UIDs: 1000-60000 (not strictly enforced)
+                                    People account UIDs must be between 1000-60000
                                 {{ else if eq .section "system" }}
-                                    Recommended range for System account UIDs: 9000-9100 (not strictly enforced)
+                                    System account UIDs must be between 9000-9100
                                 {{ else if eq .section "database" }}
-                                    Recommended range for Database account UIDs: 70000-79999 (not strictly enforced)
+                                    Database account UIDs must be between 70000-79999
                                 {{ else if eq .section "service" }}
-                                    Recommended range for Service account UIDs: 60001-65535 (not strictly enforced)
+                                    Service account UIDs must be between 60001-65535
                                 {{ end }}
                             </div>
-                            <div id="uidFeedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
@@ -379,19 +334,18 @@
                         <input type="hidden" id="groupId">
                         <div class="mb-3">
                             <label for="gid" class="form-label">GID</label>
-                            <input type="number" class="form-control" id="gid" required onchange="validateGID()" onblur="validateGID()">
+                            <input type="number" class="form-control" id="gid" required>
                             <div id="gidHelp" class="form-text">
                                 {{ if eq .section "people" }}
-                                    Recommended range for People group GIDs: 1000-60000 (not strictly enforced)
+                                    People group GIDs must be between 1000-60000
                                 {{ else if eq .section "system" }}
-                                    Recommended range for System group GIDs: 9000-9100 (not strictly enforced)
+                                    System group GIDs must be between 9000-9100
                                 {{ else if eq .section "database" }}
-                                    Recommended range for Database group GIDs: 70000-79999 (not strictly enforced)
+                                    Database group GIDs must be between 70000-79999
                                 {{ else if eq .section "service" }}
-                                    Recommended range for Service group GIDs: 60001-65535 (not strictly enforced)
+                                    Service group GIDs must be between 60001-65535
                                 {{ end }}
                             </div>
-                            <div id="gidFeedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="groupname" class="form-label">Groupname</label>

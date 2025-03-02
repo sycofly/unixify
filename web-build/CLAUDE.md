@@ -11,9 +11,8 @@ The application provides a web interface for managing UNIX accounts and groups w
 3. Complete audit log system for all operations
 4. Full RESTful API for all operations
 5. JWT-based authentication with optional TOTP 2FA
-6. Light/dark mode theme switching with auto-detection
-7. Read-only guest mode with visual indicators
-8. Gradient text and consistent button styling
+6. Light/dark mode theme switching
+7. Read-only guest access with registration for edit permissions
 
 ## Account/Group Types and UID/GID Ranges
 
@@ -96,42 +95,23 @@ The application includes a comprehensive authentication system:
 - Protected API routes with middleware
 - User profiles and password management
 - Self-registration with email verification and admin approval
-- Automatic guest mode with clear visual indicators
-- Proper separation between regular users and guest accounts
+- Guest read-only access for unauthenticated users
 
 ## Theming System
 
 The application supports light and dark themes:
-- CSS variables for comprehensive theme support
+- CSS variables for theming
 - Theme toggle button integrated in the navigation bar
-- Theme preference stored in localStorage for persistence
+- Theme preference stored in localStorage
 - System preference detection via `prefers-color-scheme`
 - Dark mode for all UI components including forms, tables, and alerts
-- Light grey text in tables for better dark mode readability
-- Gradient text effects for headings and descriptions
-- Consistent color palette for buttons and interactive elements
-- Custom colored badges with theme-appropriate styling
 
 ## Access Control
 
 The application implements a role-based access control system:
-- Guests have automatic read-only access to view data
-- "Guest Account (Read-Only)" indicator clearly shows status
+- Guests (unauthenticated users) have read-only access to view data
 - Registration is required to request edit permissions
 - New registrations require admin approval
 - Authenticated users can perform edits based on their role
 - UI dynamically adapts to show/hide edit controls based on permissions
-- Clear visual indicators show current access mode
-- Proper user dropdown menu visibility control for guest vs regular users
-
-## UI Enhancements
-
-The application features a modern and user-friendly interface:
-- Clean, responsive layout with Bootstrap 5
-- Soft purple and green accent colors for key UI elements
-- Blue-to-purple gradient text for headings and descriptions
-- Consistent button styling across the application
-- Card-based UI with subtle shadows and animations
-- Interactive hover effects for better user feedback
-- Custom document viewer for application documentation
-- UID/GID Range Reference card with optimized dark mode display
+- Clear visual indicators show current access mode (read-only vs. edit mode)

@@ -102,83 +102,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Check for duplicate UID
-    async function checkUIDDuplicate(uid, accountId = null) {
-        try {
-            let url = `/api/accounts/check-duplicate?uid=${uid}`;
-            if (accountId) {
-                url += `&exclude_id=${accountId}`;
-            }
-            const response = await authFetch(url);
-            const data = await response.json();
-            return data.isDuplicate === true;
-        } catch (error) {
-            console.error('Error checking for duplicate UID:', error);
-            return false; // Assume no duplicate if API call fails
-        }
-    }
-    
     // Validate UID based on account type
-    async function validateUID() {
+    function validateUID() {
         const uidField = document.getElementById('uid');
         const uid = parseInt(uidField.value);
-        const accountId = document.getElementById('accountId').value || null;
         const uidFeedback = document.getElementById('uidFeedback') || 
             document.createElement('div');
         
         if (!document.getElementById('uidFeedback')) {
             uidFeedback.id = 'uidFeedback';
-            uidFeedback.className = 'form-text';
+            uidFeedback.className = 'invalid-feedback';
             uidField.after(uidFeedback);
         }
         
         let isValid = true;
         let message = '';
         
-        // Basic range validation (now just a warning)
         switch (sectionType) {
             case 'people':
                 if (uid < 1000 || uid > 60000) {
-                    message = 'Warning: People account UIDs are recommended to be between 1000 and 60000';
+                    isValid = false;
+                    message = 'People account UIDs must be between 1000 and 60000';
                 }
                 break;
             case 'system':
                 if (uid < 9000 || uid > 9100) {
-                    message = 'Warning: System account UIDs are recommended to be between 9000 and 9100';
+                    isValid = false;
+                    message = 'System account UIDs must be between 9000 and 9100';
                 }
                 break;
             case 'service':
                 if (uid < 60001 || uid > 65535) {
-                    message = 'Warning: Service account UIDs are recommended to be between 60001 and 65535';
+                    isValid = false;
+                    message = 'Service account UIDs must be between 60001 and 65535';
                 }
                 break;
             case 'database':
                 if (uid < 70000 || uid > 79999) {
-                    message = 'Warning: Database account UIDs are recommended to be between 70000 and 79999';
+                    isValid = false;
+                    message = 'Database account UIDs must be between 70000 and 79999';
                 }
                 break;
-        }
-        
-        // Check for duplicate UID
-        const isDuplicate = await checkUIDDuplicate(uid, accountId);
-        if (isDuplicate) {
-            isValid = false;
-            message = `Error: UID ${uid} is already in use by another account`;
-            uidField.style.backgroundColor = '#ffdddd';  // Light red background
-        } else {
-            uidField.style.backgroundColor = '';  // Reset background
         }
         
         if (!isValid) {
             uidField.classList.add('is-invalid');
             uidField.classList.remove('is-valid');
-            uidFeedback.className = 'invalid-feedback d-block';
-            uidFeedback.textContent = message;
-        } else if (message) {
-            // It's just a warning, not an error
-            uidField.classList.add('is-valid');
-            uidField.classList.remove('is-invalid');
-            uidFeedback.className = 'text-warning d-block';
             uidFeedback.textContent = message;
         } else {
             uidField.classList.remove('is-invalid');
@@ -189,83 +158,52 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
-    // Check for duplicate GID
-    async function checkGIDDuplicate(gid, groupId = null) {
-        try {
-            let url = `/api/groups/check-duplicate?gid=${gid}`;
-            if (groupId) {
-                url += `&exclude_id=${groupId}`;
-            }
-            const response = await authFetch(url);
-            const data = await response.json();
-            return data.isDuplicate === true;
-        } catch (error) {
-            console.error('Error checking for duplicate GID:', error);
-            return false; // Assume no duplicate if API call fails
-        }
-    }
-    
     // Validate GID based on group type
-    async function validateGID() {
+    function validateGID() {
         const gidField = document.getElementById('gid');
         const gid = parseInt(gidField.value);
-        const groupId = document.getElementById('groupId').value || null;
         const gidFeedback = document.getElementById('gidFeedback') || 
             document.createElement('div');
         
         if (!document.getElementById('gidFeedback')) {
             gidFeedback.id = 'gidFeedback';
-            gidFeedback.className = 'form-text';
+            gidFeedback.className = 'invalid-feedback';
             gidField.after(gidFeedback);
         }
         
         let isValid = true;
         let message = '';
         
-        // Basic range validation (now just a warning)
         switch (sectionType) {
             case 'people':
                 if (gid < 1000 || gid > 60000) {
-                    message = 'Warning: People group GIDs are recommended to be between 1000 and 60000';
+                    isValid = false;
+                    message = 'People group GIDs must be between 1000 and 60000';
                 }
                 break;
             case 'system':
                 if (gid < 9000 || gid > 9100) {
-                    message = 'Warning: System group GIDs are recommended to be between 9000 and 9100';
+                    isValid = false;
+                    message = 'System group GIDs must be between 9000 and 9100';
                 }
                 break;
             case 'service':
                 if (gid < 60001 || gid > 65535) {
-                    message = 'Warning: Service group GIDs are recommended to be between 60001 and 65535';
+                    isValid = false;
+                    message = 'Service group GIDs must be between 60001 and 65535';
                 }
                 break;
             case 'database':
                 if (gid < 70000 || gid > 79999) {
-                    message = 'Warning: Database group GIDs are recommended to be between 70000 and 79999';
+                    isValid = false;
+                    message = 'Database group GIDs must be between 70000 and 79999';
                 }
                 break;
-        }
-        
-        // Check for duplicate GID
-        const isDuplicate = await checkGIDDuplicate(gid, groupId);
-        if (isDuplicate) {
-            isValid = false;
-            message = `Error: GID ${gid} is already in use by another group`;
-            gidField.style.backgroundColor = '#ffdddd';  // Light red background
-        } else {
-            gidField.style.backgroundColor = '';  // Reset background
         }
         
         if (!isValid) {
             gidField.classList.add('is-invalid');
             gidField.classList.remove('is-valid');
-            gidFeedback.className = 'invalid-feedback d-block';
-            gidFeedback.textContent = message;
-        } else if (message) {
-            // It's just a warning, not an error
-            gidField.classList.add('is-valid');
-            gidField.classList.remove('is-invalid');
-            gidFeedback.className = 'text-warning d-block';
             gidFeedback.textContent = message;
         } else {
             gidField.classList.remove('is-invalid');
@@ -471,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Open modal for new account
-    async function openNewAccountModal() {
+    function openNewAccountModal() {
         if (!accountModal) return;
         
         document.getElementById('accountModalLabel').textContent = 'New Account';
@@ -482,7 +420,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const uidField = document.getElementById('uid');
         if (uidField) {
             uidField.classList.remove('is-valid', 'is-invalid');
-            uidField.style.backgroundColor = '';
             const feedback = document.getElementById('uidFeedback');
             if (feedback) feedback.textContent = '';
         }
@@ -495,42 +432,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const primaryGroupField = document.getElementById('primaryGroupID');
         const primaryGroupLabel = primaryGroupField.closest('.mb-3').querySelector('.form-label');
         
-        // Set form attributes based on section type
+        // Set default UID based on section type
         if (uidField) {
             switch (currentSectionType) {
                 case 'people':
                     uidField.setAttribute('min', '1000');
                     uidField.setAttribute('max', '60000');
-                    uidField.setAttribute('placeholder', '1000-60000 (recommended)');
+                    uidField.setAttribute('placeholder', '1000-60000');
                     break;
                 case 'system':
                     uidField.setAttribute('min', '9000');
                     uidField.setAttribute('max', '9100');
-                    uidField.setAttribute('placeholder', '9000-9100 (recommended)');
+                    uidField.setAttribute('placeholder', '9000-9100');
                     break;
                 case 'service':
                     uidField.setAttribute('min', '60001');
                     uidField.setAttribute('max', '65535');
-                    uidField.setAttribute('placeholder', '60001-65535 (recommended)');
+                    uidField.setAttribute('placeholder', '60001-65535');
                     break;
                 case 'database':
                     uidField.setAttribute('min', '70000');
                     uidField.setAttribute('max', '79999');
-                    uidField.setAttribute('placeholder', '70000-79999 (recommended)');
+                    uidField.setAttribute('placeholder', '70000-79999');
                     break;
             }
-        }
-        
-        // Fetch the next available UID and set it as default value
-        try {
-            const response = await authFetch(`/api/accounts/next-uid?type=${currentSectionType}`);
-            const data = await response.json();
-            if (response.ok && data && data.uid) {
-                uidField.value = data.uid;
-                uidField.setAttribute('placeholder', `Suggestion: ${data.uid}`);
-            }
-        } catch (error) {
-            console.warn('Error fetching next available UID:', error);
         }
         
         if (currentSectionType === 'system') {
@@ -596,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Open modal for new group
-    async function openNewGroupModal() {
+    function openNewGroupModal() {
         if (!groupModal) return;
         
         document.getElementById('groupModalLabel').textContent = 'New Group';
@@ -607,7 +532,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const gidField = document.getElementById('gid');
         if (gidField) {
             gidField.classList.remove('is-valid', 'is-invalid');
-            gidField.style.backgroundColor = '';
             const feedback = document.getElementById('gidFeedback');
             if (feedback) feedback.textContent = '';
             
@@ -616,36 +540,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'people':
                     gidField.setAttribute('min', '1000');
                     gidField.setAttribute('max', '60000');
-                    gidField.setAttribute('placeholder', '1000-60000 (recommended)');
+                    gidField.setAttribute('placeholder', '1000-60000');
                     break;
                 case 'system':
                     gidField.setAttribute('min', '9000');
                     gidField.setAttribute('max', '9100');
-                    gidField.setAttribute('placeholder', '9000-9100 (recommended)');
+                    gidField.setAttribute('placeholder', '9000-9100');
                     break;
                 case 'service':
                     gidField.setAttribute('min', '60001');
                     gidField.setAttribute('max', '65535');
-                    gidField.setAttribute('placeholder', '60001-65535 (recommended)');
+                    gidField.setAttribute('placeholder', '60001-65535');
                     break;
                 case 'database':
                     gidField.setAttribute('min', '70000');
                     gidField.setAttribute('max', '79999');
-                    gidField.setAttribute('placeholder', '70000-79999 (recommended)');
+                    gidField.setAttribute('placeholder', '70000-79999');
                     break;
             }
-        }
-        
-        // Fetch the next available GID and set it as default value
-        try {
-            const response = await authFetch(`/api/groups/next-gid?type=${sectionType}`);
-            const data = await response.json();
-            if (response.ok && data && data.gid) {
-                gidField.value = data.gid;
-                gidField.setAttribute('placeholder', `Suggestion: ${data.gid}`);
-            }
-        } catch (error) {
-            console.warn('Error fetching next available GID:', error);
         }
         
         groupModal.show();
@@ -733,9 +645,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Save account
     async function saveAccount() {
         try {
-            // Validate UID first (now async)
-            const isValidUID = await validateUID();
-            if (!isValidUID) {
+            // Validate UID first
+            if (!validateUID()) {
                 return;
             }
             
@@ -789,9 +700,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Save group
     async function saveGroup() {
         try {
-            // Validate GID first (now async)
-            const isValidGID = await validateGID();
-            if (!isValidGID) {
+            // Validate GID first
+            if (!validateGID()) {
                 return;
             }
             

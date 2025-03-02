@@ -78,16 +78,6 @@
             <div class="login-body">
                 <div id="login-message" class="alert alert-danger d-none" role="alert"></div>
                 
-                <!-- Guest Access Banner -->
-                <div class="alert alert-info mb-4">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    <strong>Guest Access Available!</strong>
-                    <p class="mb-2 mt-1">You can browse the application in read-only mode without logging in.</p>
-                    <a href="/" class="btn btn-info btn-sm" id="continue-as-guest">
-                        <i class="bi bi-person-badge me-1"></i> Continue as Guest
-                    </a>
-                </div>
-                
                 <!-- Login Form -->
                 <form id="login-form">
                     <div class="mb-3">
@@ -151,16 +141,6 @@
             const totpSection = document.getElementById('totp-section');
             const messageElement = document.getElementById('login-message');
             const togglePasswordBtn = document.getElementById('toggle-password');
-            const guestButton = document.getElementById('continue-as-guest');
-            
-            // Handle guest access
-            guestButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                // Create a guest token
-                localStorage.setItem('guest_token', 'guest_session_' + Date.now());
-                // Redirect to home page
-                window.location.href = '/';
-            });
             const passwordInput = document.getElementById('password');
             
             // Toggle password visibility

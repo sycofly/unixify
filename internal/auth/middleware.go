@@ -58,6 +58,58 @@ func (s *Service) AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
+// GuestMiddleware creates a middleware that allows both authenticated and guest users
+func (s *Service) GuestMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Get the Authorization header
+		authHeader := c.GetHeader("Authorization")
+		
+		// If no Authorization header is present, proceed as guest
+		if authHeader == "" {
+			// Set guest info in context
+			c.Set("isGuest", true)
+			c.Next()
+			return
+		}
+
+		// If Authorization header exists, try to authenticate
+		tokenString, err := s.ExtractTokenFromHeader(authHeader)
+		if err != nil {
+			// Invalid auth header format but still allow as guest
+			c.Set("isGuest", true)
+			c.Next()
+			return
+		}
+
+		// Verify the token
+		token, err := s.VerifyToken(tokenString)
+		if err != nil || !token.Valid {
+			// Invalid token but still allow as guest
+			c.Set("isGuest", true)
+			c.Next()
+			return
+		}
+
+		// Valid token, extract user information
+		user, err := s.GetUserFromToken(token)
+		if err != nil {
+			// Failed to extract user info but still allow as guest
+			c.Set("isGuest", true)
+			c.Next()
+			return
+		}
+
+		// Store authenticated user info in the context
+		c.Set("isGuest", false)
+		c.Set("user", user)
+		c.Set("userID", user.ID)
+		c.Set("username", user.Username)
+		c.Set("role", user.Role)
+
+		c.Next()
+	}
+}
+
 // RoleMiddleware checks if the user has the required role
 func (s *Service) RoleMiddleware(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {

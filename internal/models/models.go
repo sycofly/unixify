@@ -4,32 +4,63 @@ import (
 	"time"
 )
 
+// Account type constants
+type AccountType string
+
+const (
+	AccountTypePeople   AccountType = "people"
+	AccountTypeSystem   AccountType = "system"
+	AccountTypeDatabase AccountType = "database"
+	AccountTypeService  AccountType = "service"
+)
+
+// Group type constants
+type GroupType string
+
+const (
+	GroupTypePeople   GroupType = "people"
+	GroupTypeSystem   GroupType = "system"
+	GroupTypeDatabase GroupType = "database"
+	GroupTypeService  GroupType = "service"
+)
+
 // Account represents a UNIX account (user)
 type Account struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt time.Time `json:"deleted_at" gorm:"index"`
-	Username  string    `json:"username" gorm:"unique"`
-	UID       int       `json:"uid" gorm:"unique"`
-	Type      string    `json:"type" gorm:"index"` // people, system, database, service
-	Active    bool      `json:"active" gorm:"default:true"`
+	ID             uint        `json:"id" gorm:"primaryKey"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
+	DeletedAt      time.Time   `json:"deleted_at" gorm:"index"`
+	Username       string      `json:"username" gorm:"unique"`
+	UID            int         `json:"uid" gorm:"unique"`
+	Type           AccountType `json:"type" gorm:"index"` // people, system, database, service
+	PrimaryGroupID uint        `json:"primary_group_id" gorm:"index"`
+	Active         bool        `json:"active" gorm:"default:true"`
 }
 
 // Group represents a UNIX group
 type Group struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt time.Time `json:"deleted_at" gorm:"index"`
-	Groupname string    `json:"groupname" gorm:"unique"`
-	GID       int       `json:"gid" gorm:"unique"`
-	Type      string    `json:"type" gorm:"index"` // people, system, database, service
-	Active    bool      `json:"active" gorm:"default:true"`
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	DeletedAt   time.Time `json:"deleted_at" gorm:"index"`
+	Groupname   string    `json:"groupname" gorm:"unique"`
+	GID         int       `json:"gid" gorm:"unique"`
+	Type        GroupType `json:"type" gorm:"index"` // people, system, database, service
+	Description string    `json:"description"`
+	Active      bool      `json:"active" gorm:"default:true"`
 }
 
 // Membership represents the association between accounts and groups
 type Membership struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	CreatedAt time.Time `json:"created_at"`
+	AccountID uint      `json:"account_id" gorm:"index"`
+	GroupID   uint      `json:"group_id" gorm:"index"`
+}
+
+// AccountGroup represents the association between accounts and groups
+// This is an alias for Membership to maintain compatibility with existing code
+type AccountGroup struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	CreatedAt time.Time `json:"created_at"`
 	AccountID uint      `json:"account_id" gorm:"index"`
@@ -43,10 +74,13 @@ type AuditEntry struct {
 	Action      string    `json:"action"`
 	ResourceID  uint      `json:"resource_id"`
 	ResourceType string    `json:"resource_type"`
+	EntityID    uint      `json:"entity_id"`      // Alias for ResourceID
+	EntityType  string    `json:"entity_type"`    // Alias for ResourceType
 	UserID      uint      `json:"user_id"`
 	Username    string    `json:"username"`
 	Details     string    `json:"details"`
 	Section     string    `json:"section"`
+	IPAddress   string    `json:"ip_address"`
 }
 
 // User represents an authenticated user of the application

@@ -123,55 +123,70 @@ func (s *Server) initRoutes() {
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
 		})
 
-		// Protected API routes - all other routes require authentication
-		protected := api.Group("/")
-		protected.Use(authMiddleware)
+		// Guest accessible routes - read-only operations
+		guestAPI := api.Group("/")
+		guestAPI.Use(guestMiddleware)
 		{
-			// Account routes
-			accounts := protected.Group("/accounts")
+			// Account read-only routes
+			accounts := guestAPI.Group("/accounts")
 			{
 				accounts.GET("", s.handler.GetAllAccounts)
 				accounts.GET("/:id", s.handler.GetAccount)
-				accounts.POST("", s.handler.CreateAccount)
-				accounts.PUT("/:id", s.handler.UpdateAccount)
-				accounts.DELETE("/:id", s.handler.DeleteAccount)
 				accounts.GET("/uid/:uid", s.handler.GetAccountByUID)
 				accounts.GET("/username/:username", s.handler.GetAccountByUsername)
 				accounts.GET("/:id/groups", s.handler.GetAccountGroups)
 			}
 
-			// Group routes
-			groups := protected.Group("/groups")
+			// Group read-only routes
+			groups := guestAPI.Group("/groups")
 			{
 				groups.GET("", s.handler.GetAllGroups)
 				groups.GET("/:id", s.handler.GetGroup)
-				groups.POST("", s.handler.CreateGroup)
-				groups.PUT("/:id", s.handler.UpdateGroup)
-				groups.DELETE("/:id", s.handler.DeleteGroup)
 				groups.GET("/gid/:gid", s.handler.GetGroupByGID)
 				groups.GET("/groupname/:groupname", s.handler.GetGroupByGroupname)
 				groups.GET("/:id/accounts", s.handler.GetGroupMembers)
 			}
 
-			// Membership routes
-			membership := protected.Group("/memberships")
-			{
-				membership.POST("", s.handler.AssignAccountToGroup)
-				membership.DELETE("", s.handler.RemoveAccountFromGroup)
-			}
-
-			// Search routes
-			search := protected.Group("/search")
+			// Search routes (read-only)
+			search := guestAPI.Group("/search")
 			{
 				search.GET("/accounts", s.handler.SearchAccounts)
 				search.GET("/groups", s.handler.SearchGroups)
 			}
 
-			// Audit routes
-			audit := protected.Group("/audit")
+			// Audit routes (read-only)
+			audit := guestAPI.Group("/audit")
 			{
 				audit.GET("", s.handler.GetAuditEntries)
 				audit.GET("/:id", s.handler.GetAuditEntry)
+			}
+		}
+
+		// Protected API routes - require authentication for write operations
+		protected := api.Group("/")
+		protected.Use(authMiddleware)
+		{
+			// Account write operations
+			accounts := protected.Group("/accounts")
+			{
+				accounts.POST("", s.handler.CreateAccount)
+				accounts.PUT("/:id", s.handler.UpdateAccount)
+				accounts.DELETE("/:id", s.handler.DeleteAccount)
+			}
+
+			// Group write operations
+			groups := protected.Group("/groups")
+			{
+				groups.POST("", s.handler.CreateGroup)
+				groups.PUT("/:id", s.handler.UpdateGroup)
+				groups.DELETE("/:id", s.handler.DeleteGroup)
+			}
+
+			// Membership routes (write operations)
+			membership := protected.Group("/memberships")
+			{
+				membership.POST("", s.handler.AssignAccountToGroup)
+				membership.DELETE("", s.handler.RemoveAccountFromGroup)
 			}
 		}
 	}
@@ -250,6 +265,97 @@ func (s *Server) initRoutes() {
 		uiRoutes.GET("/register", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "register.html", gin.H{
 				"title": "Unixify - Register",
+			})
+		})
+		
+		// Claude page - displays documentation content
+		uiRoutes.GET("/claude", func(c *gin.Context) {
+			// Create documentation content directly
+			documentationContent := `# Unixify - UNIX Account/Group Registry
+
+Unixify is a Go application that serves as a registry for UNIX account UIDs and Group GIDs.
+
+## Project Overview
+
+The application provides a web interface for managing UNIX accounts and groups with the following features:
+
+1. PostgreSQL database backend
+2. Web interface with four sections: People, System, Database, and Service
+3. Complete audit log system for all operations
+4. Full RESTful API for all operations
+5. JWT-based authentication with optional TOTP 2FA
+6. Light/dark mode theme switching with auto-detection
+7. Read-only guest mode with visual indicators
+8. Gradient text and consistent button styling
+
+## Account/Group Types and UID/GID Ranges
+
+| Type     | Account UID Range | Group GID Range |
+|----------|-------------------|-----------------|
+| People   | 1000-6000         | 1000-6000       |
+| System   | 9000-9100         | 9000-9100       |
+| Database | 7000-7999         | 7000-7999       |
+| Service  | 8000-8999         | 8000-8999       |
+
+## Key Operations
+
+- Add/edit/delete accounts and groups
+- Assign/remove users from groups
+- View detailed audit logs of all system events
+- Search by UID, GID, username, or groupname
+- User authentication with optional TOTP 2FA
+- Theme switching (light/dark mode)
+- Guest read-only access with registration for edit permissions
+
+## Tech Stack
+
+- Go with Gin web framework
+- PostgreSQL database
+- HTML/CSS/JavaScript frontend
+- RESTful API backend
+- JWT-based authentication
+- Google Authenticator TOTP support
+- Theme switching with CSS variables
+- Audit logging for all operations
+
+## Authentication System
+
+The application includes a comprehensive authentication system:
+- JWT token-based authentication
+- Password hashing with bcrypt
+- Optional TOTP second factor with Google Authenticator
+- Protected API routes with middleware
+- User profiles and password management
+- Self-registration with email verification and admin approval
+- Automatic guest mode with clear visual indicators
+- Proper separation between regular users and guest accounts
+
+## Theming System
+
+The application supports light and dark themes:
+- CSS variables for comprehensive theme support
+- Theme toggle button integrated in the navigation bar
+- Theme preference stored in localStorage for persistence
+- System preference detection via prefers-color-scheme
+- Dark mode for all UI components including forms, tables, and alerts
+- Light grey text in tables for better dark mode readability
+- Gradient text effects for headings and descriptions
+- Consistent color palette for buttons and interactive elements
+- Custom colored badges with theme-appropriate styling
+
+## Access Control
+
+The application implements a role-based access control system:
+- Guests (unauthenticated users) have read-only access to view data
+- Registration is required to request edit permissions
+- New registrations require admin approval
+- Authenticated users can perform edits based on their role
+- UI dynamically adapts to show/hide edit controls based on permissions
+- Clear visual indicators show current access mode (read-only vs. edit mode)`
+
+			c.HTML(http.StatusOK, "document.html", gin.H{
+				"title": "Unixify - Documentation",
+				"content": documentationContent,
 			})
 		})
 

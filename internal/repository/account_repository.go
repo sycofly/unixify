@@ -25,6 +25,52 @@ func (r *AccountRepository) Create(account *models.Account) error {
 	return r.db.Create(account).Error
 }
 
+// IsUIDDuplicate checks if a UID already exists
+func (r *AccountRepository) IsUIDDuplicate(uid int, excludeID uint) (bool, error) {
+	var count int64
+	query := r.db.Model(&models.Account{}).Where("uid = ?", uid)
+	
+	// Exclude current account if updating
+	if excludeID > 0 {
+		query = query.Where("id != ?", excludeID)
+	}
+	
+	err := query.Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	
+	return count > 0, nil
+}
+
+// GetLatestUID returns the next available UID for a specific account type
+func (r *AccountRepository) GetLatestUID(accountType models.AccountType) (int, error) {
+	var account models.Account
+	
+	err := r.db.Where("type = ?", accountType).Order("uid DESC").First(&account).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// No accounts of this type found, return the minimum UID for this type
+			switch accountType {
+			case models.AccountTypePeople:
+				return 1000, nil
+			case models.AccountTypeSystem:
+				return 9000, nil
+			case models.AccountTypeService:
+				return 60001, nil
+			case models.AccountTypeDatabase:
+				return 70000, nil
+			default:
+				return 1000, nil
+			}
+		}
+		return 0, err
+	}
+	
+	// Return the next available UID (current highest + 1)
+	return account.UID + 1, nil
+}
+
 // FindByID finds an account by ID
 func (r *AccountRepository) FindByID(id uint) (*models.Account, error) {
 	var account models.Account

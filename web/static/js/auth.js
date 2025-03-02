@@ -168,9 +168,16 @@ function initAuthUI() {
     document.body.setAttribute('data-edit-permission', canEdit.toString());
     document.body.setAttribute('data-guest-mode', isGuest.toString());
     
-    // Show elements that require authentication
+    // Show elements that require authentication - hide for guests
     authElements.forEach(el => {
-        el.style.display = isLoggedIn ? '' : 'none';
+        // Special handling for user profile dropdown
+        if (el.classList.contains('auth-user-container') || el.closest('.auth-user-container')) {
+            // Only show profile dropdown for regular users, not for guests
+            el.style.display = isLoggedIn && !isGuest ? '' : 'none';
+        } else {
+            // For other auth-required elements, show for both guests and regular users
+            el.style.display = isLoggedIn ? '' : 'none';
+        }
     });
     
     // Show elements that should be hidden when authenticated
@@ -239,20 +246,22 @@ function initAuthUI() {
 
 // Check authentication on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Ensure guest token is set if no regular token exists for automatic guest mode
+    if (!localStorage.getItem('auth_token') && !localStorage.getItem('guest_token')) {
+        localStorage.setItem('guest_token', 'guest_session_' + Date.now());
+        console.log("Auto-creating guest session");
+    }
+    
     // Initialize auth UI
     initAuthUI();
     
     // Redirect to login if strict authentication is required but user is not logged in
     const requiresStrictAuth = document.body.hasAttribute('data-requires-strict-auth');
-    const requiresAuth = document.body.hasAttribute('data-requires-auth');
     
-    // Strict auth pages always redirect to login if not authenticated
+    // Only strictly protected pages redirect to login
     if (requiresStrictAuth && !isAuthenticated()) {
         window.location.href = '/login';
-    }
-    
-    // Regular auth pages just show guest mode with limited functionality
-    else if (requiresAuth && !isAuthenticated()) {
-        console.log("Guest mode active - read-only access enabled");
+    } else {
+        console.log("Guest mode active or user authenticated");
     }
 });

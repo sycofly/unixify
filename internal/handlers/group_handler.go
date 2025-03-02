@@ -239,3 +239,61 @@ func (h *Handler) SearchGroups(c *gin.Context) {
 
 	c.JSON(http.StatusOK, groups)
 }
+
+// CheckGIDDuplicate handles GET /api/groups/check-duplicate
+func (h *Handler) CheckGIDDuplicate(c *gin.Context) {
+	// Parse GID
+	gidStr := c.Query("gid")
+	if gidStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "GID is required"})
+		return
+	}
+	
+	gid, err := strconv.Atoi(gidStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid GID"})
+		return
+	}
+	
+	// Parse exclude ID if provided
+	var excludeID uint = 0
+	excludeIDStr := c.Query("exclude_id")
+	if excludeIDStr != "" {
+		id, err := strconv.ParseUint(excludeIDStr, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid exclude_id"})
+			return
+		}
+		excludeID = uint(id)
+	}
+	
+	// Check if GID is duplicate
+	isDuplicate, err := h.services.Group.IsGIDDuplicate(gid, excludeID)
+	if err != nil {
+		h.logger.Errorf("Failed to check for duplicate GID: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check for duplicate"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"isDuplicate": isDuplicate})
+}
+
+// GetNextAvailableGID handles GET /api/groups/next-gid
+func (h *Handler) GetNextAvailableGID(c *gin.Context) {
+	// Get group type from query parameter
+	groupType := models.GroupType(c.Query("type"))
+	if groupType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Group type is required"})
+		return
+	}
+	
+	// Get next available GID
+	gid, err := h.services.Group.GetNextAvailableGID(groupType)
+	if err != nil {
+		h.logger.Errorf("Failed to get next available GID: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get next available GID"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"gid": gid})
+}

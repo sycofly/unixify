@@ -257,3 +257,61 @@ func (h *Handler) SearchAccounts(c *gin.Context) {
 
 	c.JSON(http.StatusOK, accounts)
 }
+
+// CheckUIDDuplicate handles GET /api/accounts/check-duplicate
+func (h *Handler) CheckUIDDuplicate(c *gin.Context) {
+	// Parse UID
+	uidStr := c.Query("uid")
+	if uidStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "UID is required"})
+		return
+	}
+	
+	uid, err := strconv.Atoi(uidStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UID"})
+		return
+	}
+	
+	// Parse exclude ID if provided
+	var excludeID uint = 0
+	excludeIDStr := c.Query("exclude_id")
+	if excludeIDStr != "" {
+		id, err := strconv.ParseUint(excludeIDStr, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid exclude_id"})
+			return
+		}
+		excludeID = uint(id)
+	}
+	
+	// Check if UID is duplicate
+	isDuplicate, err := h.services.Account.IsUIDDuplicate(uid, excludeID)
+	if err != nil {
+		h.logger.Errorf("Failed to check for duplicate UID: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check for duplicate"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"isDuplicate": isDuplicate})
+}
+
+// GetNextAvailableUID handles GET /api/accounts/next-uid
+func (h *Handler) GetNextAvailableUID(c *gin.Context) {
+	// Get account type from query parameter
+	accountType := models.AccountType(c.Query("type"))
+	if accountType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Account type is required"})
+		return
+	}
+	
+	// Get next available UID
+	uid, err := h.services.Account.GetNextAvailableUID(accountType)
+	if err != nil {
+		h.logger.Errorf("Failed to get next available UID: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get next available UID"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"uid": uid})
+}

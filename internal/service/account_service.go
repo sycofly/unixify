@@ -31,19 +31,29 @@ func NewAccountService(
 
 // CreateAccount creates a new account
 func (s *AccountService) CreateAccount(account *models.Account, userID uint, username, ipAddress string) error {
-	// Validate UID
-	if err := validator.ValidateUID(account.UID); err != nil {
-		return err
+	// Validate UID - now just a warning
+	if err := validator.ValidateUIDForType(account.UID, account.Type); err != nil {
+		// If it's a warning (starts with "WARNING:"), log it but continue
+		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
+			// Log the warning but continue
+			fmt.Println(err.Error())
+		} else {
+			// It's a real error, return it
+			return err
+		}
 	}
 
-	// Check if UID already exists
-	existingAccount, err := s.accountRepo.FindByUID(account.UID)
-	if err == nil && existingAccount != nil {
+	// Check if UID already exists using the improved method
+	isDuplicate, err := s.accountRepo.IsUIDDuplicate(account.UID, 0)
+	if err != nil {
+		return err
+	}
+	if isDuplicate {
 		return fmt.Errorf("account with UID %d already exists", account.UID)
 	}
 
 	// Check if username already exists
-	existingAccount, err = s.accountRepo.FindByUsername(account.Username)
+	existingAccount, err := s.accountRepo.FindByUsername(account.Username)
 	if err == nil && existingAccount != nil {
 		return fmt.Errorf("account with username %s already exists", account.Username)
 	}
@@ -106,9 +116,16 @@ func (s *AccountService) GetAllAccounts(accountType models.AccountType) ([]model
 
 // UpdateAccount updates an account
 func (s *AccountService) UpdateAccount(account *models.Account, userID uint, username, ipAddress string) error {
-	// Validate UID
-	if err := validator.ValidateUID(account.UID); err != nil {
-		return err
+	// Validate UID - now just a warning
+	if err := validator.ValidateUIDForType(account.UID, account.Type); err != nil {
+		// If it's a warning (starts with "WARNING:"), log it but continue
+		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
+			// Log the warning but continue
+			fmt.Println(err.Error())
+		} else {
+			// It's a real error, return it
+			return err
+		}
 	}
 
 	// Get the original account to check if UID is changing
@@ -117,12 +134,13 @@ func (s *AccountService) UpdateAccount(account *models.Account, userID uint, use
 		return err
 	}
 
-	// If UID is changing, check if new UID already exists
-	if originalAccount.UID != account.UID {
-		existingAccount, err := s.accountRepo.FindByUID(account.UID)
-		if err == nil && existingAccount != nil && existingAccount.ID != account.ID {
-			return fmt.Errorf("account with UID %d already exists", account.UID)
-		}
+	// Check if UID already exists using the improved method
+	isDuplicate, err := s.accountRepo.IsUIDDuplicate(account.UID, account.ID)
+	if err != nil {
+		return err
+	}
+	if isDuplicate {
+		return fmt.Errorf("account with UID %d already exists", account.UID)
 	}
 
 	// If username is changing, check if new username already exists
@@ -283,4 +301,14 @@ func (s *AccountService) GetAccountGroups(accountID uint) ([]models.Group, error
 // SearchAccounts searches for accounts by UID or username
 func (s *AccountService) SearchAccounts(query string) ([]models.Account, error) {
 	return s.accountRepo.Search(query)
+}
+
+// IsUIDDuplicate checks if a UID already exists
+func (s *AccountService) IsUIDDuplicate(uid int, excludeID uint) (bool, error) {
+	return s.accountRepo.IsUIDDuplicate(uid, excludeID)
+}
+
+// GetNextAvailableUID gets the next available UID for a specific account type
+func (s *AccountService) GetNextAvailableUID(accountType models.AccountType) (int, error) {
+	return s.accountRepo.GetLatestUID(accountType)
 }

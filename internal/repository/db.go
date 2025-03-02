@@ -32,9 +32,25 @@ type Repositories struct {
 	Audit   *AuditRepository
 }
 
+// Repository is an alias for Repositories for backward compatibility
+type Repository struct {
+	Account *AccountRepository
+	Group   *GroupRepository
+	Audit   *AuditRepository
+}
+
 // NewRepositories creates new instances of all repositories
 func NewRepositories(db *gorm.DB) *Repositories {
 	return &Repositories{
+		Account: NewAccountRepository(db),
+		Group:   NewGroupRepository(db),
+		Audit:   NewAuditRepository(db),
+	}
+}
+
+// NewRepository creates new instances of all repositories (alias for NewRepositories)
+func NewRepository(db *gorm.DB) *Repository {
+	return &Repository{
 		Account: NewAccountRepository(db),
 		Group:   NewGroupRepository(db),
 		Audit:   NewAuditRepository(db),

@@ -626,26 +626,6 @@ body {
     background-color: rgba(25, 135, 84, 0.1) !important;
 }
 
-/* Learn More button with soft purple color */
-.learn-more-btn {
-    color: #8e44ad !important; /* Soft purple */
-    border-color: #8e44ad !important;
-}
-
-.learn-more-btn:hover {
-    background-color: rgba(142, 68, 173, 0.1) !important;
-}
-
-/* Gradient text for jumbotron description */
-.jumbotron-tagline {
-    background: linear-gradient(90deg, #0d6efd, #8e44ad);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    display: inline-block;
-    font-weight: 500;
-}
-
 /* Footer styling */
 footer {
     background-color: var(--card-bg) !important;

@@ -25,6 +25,52 @@ func (r *GroupRepository) Create(group *models.Group) error {
 	return r.db.Create(group).Error
 }
 
+// IsGIDDuplicate checks if a GID already exists
+func (r *GroupRepository) IsGIDDuplicate(gid int, excludeID uint) (bool, error) {
+	var count int64
+	query := r.db.Model(&models.Group{}).Where("gid = ?", gid)
+	
+	// Exclude current group if updating
+	if excludeID > 0 {
+		query = query.Where("id != ?", excludeID)
+	}
+	
+	err := query.Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	
+	return count > 0, nil
+}
+
+// GetLatestGID returns the next available GID for a specific group type
+func (r *GroupRepository) GetLatestGID(groupType models.GroupType) (int, error) {
+	var group models.Group
+	
+	err := r.db.Where("type = ?", groupType).Order("gid DESC").First(&group).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// No groups of this type found, return the minimum GID for this type
+			switch groupType {
+			case models.GroupTypePeople:
+				return 1000, nil
+			case models.GroupTypeSystem:
+				return 9000, nil
+			case models.GroupTypeService:
+				return 60001, nil
+			case models.GroupTypeDatabase:
+				return 70000, nil
+			default:
+				return 1000, nil
+			}
+		}
+		return 0, err
+	}
+	
+	// Return the next available GID (current highest + 1)
+	return group.GID + 1, nil
+}
+
 // FindByID finds a group by ID
 func (r *GroupRepository) FindByID(id uint) (*models.Group, error) {
 	var group models.Group

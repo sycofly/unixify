@@ -31,19 +31,29 @@ func NewGroupService(
 
 // CreateGroup creates a new group
 func (s *GroupService) CreateGroup(group *models.Group, userID uint, username, ipAddress string) error {
-	// Validate GID
-	if err := validator.ValidateGID(group.GID); err != nil {
-		return err
+	// Validate GID - now just a warning
+	if err := validator.ValidateGIDForType(group.GID, group.Type); err != nil {
+		// If it's a warning (starts with "WARNING:"), log it but continue
+		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
+			// Log the warning but continue
+			fmt.Println(err.Error())
+		} else {
+			// It's a real error, return it
+			return err
+		}
 	}
 
-	// Check if GID already exists
-	existingGroup, err := s.groupRepo.FindByGID(group.GID)
-	if err == nil && existingGroup != nil {
+	// Check if GID already exists using the improved method
+	isDuplicate, err := s.groupRepo.IsGIDDuplicate(group.GID, 0)
+	if err != nil {
+		return err
+	}
+	if isDuplicate {
 		return fmt.Errorf("group with GID %d already exists", group.GID)
 	}
 
 	// Check if groupname already exists
-	existingGroup, err = s.groupRepo.FindByGroupname(group.Groupname)
+	existingGroup, err := s.groupRepo.FindByGroupname(group.Groupname)
 	if err == nil && existingGroup != nil {
 		return fmt.Errorf("group with groupname %s already exists", group.Groupname)
 	}
@@ -90,9 +100,16 @@ func (s *GroupService) GetAllGroups(groupType models.GroupType) ([]models.Group,
 
 // UpdateGroup updates a group
 func (s *GroupService) UpdateGroup(group *models.Group, userID uint, username, ipAddress string) error {
-	// Validate GID
-	if err := validator.ValidateGID(group.GID); err != nil {
-		return err
+	// Validate GID - now just a warning
+	if err := validator.ValidateGIDForType(group.GID, group.Type); err != nil {
+		// If it's a warning (starts with "WARNING:"), log it but continue
+		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
+			// Log the warning but continue
+			fmt.Println(err.Error())
+		} else {
+			// It's a real error, return it
+			return err
+		}
 	}
 
 	// Get the original group to check if GID is changing
@@ -101,12 +118,13 @@ func (s *GroupService) UpdateGroup(group *models.Group, userID uint, username, i
 		return err
 	}
 
-	// If GID is changing, check if new GID already exists
-	if originalGroup.GID != group.GID {
-		existingGroup, err := s.groupRepo.FindByGID(group.GID)
-		if err == nil && existingGroup != nil && existingGroup.ID != group.ID {
-			return fmt.Errorf("group with GID %d already exists", group.GID)
-		}
+	// Check if GID already exists using the improved method
+	isDuplicate, err := s.groupRepo.IsGIDDuplicate(group.GID, group.ID)
+	if err != nil {
+		return err
+	}
+	if isDuplicate {
+		return fmt.Errorf("group with GID %d already exists", group.GID)
 	}
 
 	// If groupname is changing, check if new groupname already exists
@@ -173,4 +191,14 @@ func (s *GroupService) GetGroupMembers(groupID uint) ([]models.Account, error) {
 // SearchGroups searches for groups by GID or groupname
 func (s *GroupService) SearchGroups(query string) ([]models.Group, error) {
 	return s.groupRepo.Search(query)
+}
+
+// IsGIDDuplicate checks if a GID already exists
+func (s *GroupService) IsGIDDuplicate(gid int, excludeID uint) (bool, error) {
+	return s.groupRepo.IsGIDDuplicate(gid, excludeID)
+}
+
+// GetNextAvailableGID gets the next available GID for a specific group type
+func (s *GroupService) GetNextAvailableGID(groupType models.GroupType) (int, error) {
+	return s.groupRepo.GetLatestGID(groupType)
 }
