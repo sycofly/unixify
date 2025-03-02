@@ -111,7 +111,9 @@ func LoggerMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 // initRoutes initializes the API routes
 func (s *Server) initRoutes() {
 	// Authentication middleware
-	authMiddleware := auth.NewService(*s.config).AuthMiddleware()
+	authService := auth.NewService(*s.config)
+	authMiddleware := authService.AuthMiddleware()
+	guestMiddleware := authService.GuestMiddleware()
 
 	// API routes
 	api := s.router.Group("/api")
@@ -234,13 +236,20 @@ func (s *Server) initRoutes() {
 		})
 	})
 	
-	// Protected UI Routes - require authentication
-	protectedUI := s.router.Group("/")
-	protectedUI.Use(authMiddleware)
+	// UI Routes - allow guest access
+	uiRoutes := s.router.Group("/")
+	uiRoutes.Use(guestMiddleware)
 	{
-		protectedUI.GET("/", func(c *gin.Context) {
+		uiRoutes.GET("/", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "index.html", gin.H{
 				"title": "Unixify - Account Management",
+			})
+		})
+
+		// Register page
+		uiRoutes.GET("/register", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "register.html", gin.H{
+				"title": "Unixify - Register",
 			})
 		})
 
@@ -248,7 +257,7 @@ func (s *Server) initRoutes() {
 		sections := []string{"people", "system", "database", "service"}
 		for _, section := range sections {
 			section := section // Create a new variable to avoid closure issues
-			protectedUI.GET("/"+section, func(c *gin.Context) {
+			uiRoutes.GET("/"+section, func(c *gin.Context) {
 				c.HTML(http.StatusOK, "section.html", gin.H{
 					"title":   "Unixify - " + section,
 					"section": section,

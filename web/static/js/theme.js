@@ -41,28 +41,39 @@ function getTheme() {
  * @param {string} theme - The current theme (light or dark)
  */
 function updateThemeToggle(theme) {
-    // Find the theme toggle button
+    // Find all theme toggle buttons
     const toggleBtn = document.getElementById('theme-toggle');
+    const navToggleBtn = document.getElementById('theme-toggle-nav');
     
+    // Update standalone button if it exists
     if (toggleBtn) {
         if (theme === 'dark') {
             toggleBtn.setAttribute('title', 'Switch to Light Mode');
             toggleBtn.setAttribute('aria-label', 'Switch to Light Mode');
             toggleBtn.classList.remove('btn-warning');
-            toggleBtn.classList.add('btn-light');
+            toggleBtn.classList.add('btn-secondary');
             toggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i> Light';
         } else {
             toggleBtn.setAttribute('title', 'Switch to Dark Mode');
             toggleBtn.setAttribute('aria-label', 'Switch to Dark Mode');
-            toggleBtn.classList.remove('btn-light');
+            toggleBtn.classList.remove('btn-secondary');
             toggleBtn.classList.add('btn-warning');
             toggleBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i> Theme';
         }
     }
     
-    // Log theme state for debugging
-    console.log("Theme toggled. Current theme:", theme);
-    console.log("Theme button found:", toggleBtn !== null);
+    // Update navbar integrated button if it exists
+    if (navToggleBtn) {
+        if (theme === 'dark') {
+            navToggleBtn.setAttribute('title', 'Switch to Light Mode');
+            navToggleBtn.setAttribute('aria-label', 'Switch to Light Mode');
+            navToggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+        } else {
+            navToggleBtn.setAttribute('title', 'Switch to Dark Mode');
+            navToggleBtn.setAttribute('aria-label', 'Switch to Dark Mode');
+            navToggleBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+        }
+    }
 }
 
 /**

@@ -13,8 +13,6 @@
         <div class="container">
             <a class="navbar-brand" href="/"><i class="bi bi-person-badge"></i> Unixify</a>
             
-            <!-- No theme button on section pages -->
-            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -42,19 +40,62 @@
                         </a>
                     </li>
                 </ul>
-                <div class="d-flex align-items-center">
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="searchInput" placeholder="Search by UID, Username, GID, or Groupname">
-                        <button class="btn btn-primary" type="button" id="searchBtn">
-                            <i class="bi bi-search"></i>
-                        </button>
+                
+                <!-- Guest mode indicator -->
+                <div id="guest-mode-indicator" class="guest-mode-indicator me-4" data-auth-required>
+                    <i class="bi bi-person-badge"></i> Guest Account (Read-Only)
+                </div>
+                
+                <!-- Authentication UI for logged in users -->
+                <div class="d-flex" data-auth-required>
+                    <div class="auth-user-container dropdown">
+                        <div class="d-flex align-items-center" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="auth-user-avatar" data-user-avatar>U</div>
+                            <div class="auth-user-info d-none d-sm-flex">
+                                <div class="auth-user-name text-light" data-user-name>Username</div>
+                                <div class="auth-user-role text-light" data-user-role>Role</div>
+                            </div>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person-circle me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="/settings"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logout-btn"><i class="bi bi-box-arrow-right me-2"></i>Log Out</a></li>
+                        </ul>
                     </div>
                 </div>
+                
+                <!-- Login button only for guests (Register moved to banner) -->
+                <div class="d-flex" data-auth-forbidden>
+                    <a href="/login" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+                
+                <!-- Theme toggle button -->
+                <button id="theme-toggle-nav" class="theme-toggle-nav btn btn-outline-secondary btn-sm ms-3" title="Toggle dark/light mode">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
             </div>
         </div>
     </nav>
+    
+    <!-- Search bar (separate row) -->
+    <div class="bg-light py-2 border-bottom mb-3">
+        <div class="container">
+            <div class="d-flex justify-content-center">
+                <div class="input-group" style="max-width: 600px;">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search by UID, Username, GID, or Groupname">
+                    <button class="btn btn-primary search-exempt" type="button" id="searchBtn">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="container mt-4">
+        
         <h1 class="mb-4 section-header">
             {{ if eq .section "people" }}
                 <i class="bi bi-people-fill"></i>
@@ -90,7 +131,7 @@
             <div class="tab-pane fade show active p-3" id="accounts" role="tabpanel" aria-labelledby="accounts-tab">
                 <div class="d-flex justify-content-between mb-3 align-items-center">
                     <h2>{{ title .section }} Accounts</h2>
-                    <button type="button" class="btn btn-primary" id="newAccountBtn">
+                    <button type="button" class="btn btn-primary edit-only" id="newAccountBtn">
                         <i class="bi bi-plus-circle"></i> New Account
                     </button>
                 </div>
@@ -119,7 +160,7 @@
             <div class="tab-pane fade p-3" id="groups" role="tabpanel" aria-labelledby="groups-tab">
                 <div class="d-flex justify-content-between mb-3 align-items-center">
                     <h2>{{ title .section }} Groups</h2>
-                    <button type="button" class="btn btn-primary" id="newGroupBtn">
+                    <button type="button" class="btn btn-primary edit-only" id="newGroupBtn">
                         <i class="bi bi-plus-circle"></i> New Group
                     </button>
                 </div>
@@ -396,9 +437,9 @@
         </div>
     </div>
 
-    <footer class="bg-light py-3 mt-5">
+    <footer class="py-3 mt-5 border-top">
         <div class="container text-center">
-            <p class="text-muted mb-0">Unixify &copy; 2025 - A UNIX Team Management System</p>
+            <p class="mb-0">Unixify &copy; 2025 - UNIX Team Management System</p>
         </div>
     </footer>
 
@@ -407,6 +448,5 @@
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/theme.js"></script>
     <script src="/static/js/section.js"></script>
-    <script src="/static/js/theme_test.js"></script>
 </body>
 </html>

@@ -5,7 +5,23 @@
  * @returns {boolean} True if authenticated, false otherwise
  */
 function isAuthenticated() {
-    return !!localStorage.getItem('auth_token');
+    // Check if user is logged in with a token
+    const token = localStorage.getItem('auth_token');
+    
+    // If no token, but we have a guest token, user is authenticated as guest
+    if (!token && localStorage.getItem('guest_token')) {
+        return true;
+    }
+    
+    return !!token;
+}
+
+/**
+ * Check if the user is in guest mode
+ * @returns {boolean} True if guest user, false otherwise
+ */
+function isGuestUser() {
+    return !localStorage.getItem('auth_token') && !!localStorage.getItem('guest_token');
 }
 
 /**
@@ -13,8 +29,26 @@ function isAuthenticated() {
  * @returns {Object|null} User info or null if not authenticated
  */
 function getCurrentUser() {
+    // First try to get regular user info
     const userInfo = localStorage.getItem('user_info');
-    return userInfo ? JSON.parse(userInfo) : null;
+    if (userInfo) {
+        return JSON.parse(userInfo);
+    }
+    
+    // If guest token exists, return guest user info
+    if (localStorage.getItem('guest_token')) {
+        return {
+            id: 0,
+            username: "guest",
+            email: "guest@example.com",
+            firstName: "Guest",
+            lastName: "User",
+            role: "guest",
+            isGuest: true
+        };
+    }
+    
+    return null;
 }
 
 /**
@@ -66,15 +100,49 @@ async function authFetch(url, options = {}) {
  * Logout the current user
  */
 function logout() {
+    // For regular users
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_info');
-    window.location.href = '/login';
+    
+    // For guest users
+    localStorage.removeItem('guest_token');
+    
+    // Create a new guest session before redirecting
+    localStorage.setItem('guest_token', 'guest_session_' + Date.now());
+    
+    // Redirect to home page, not login (since we're using guest access)
+    window.location.href = '/';
+}
+
+/**
+ * Check if the user has edit permissions
+ * @returns {boolean} True if user has edit permissions, false otherwise
+ */
+function hasEditPermission() {
+    // If not authenticated or is guest user, always return false
+    if (!isAuthenticated() || isGuestUser()) return false;
+    
+    // Get user info
+    const user = getCurrentUser();
+    if (!user) return false;
+    
+    // Guest users never have edit permissions
+    if (user.role === 'guest') return false;
+    
+    // Check if user role has edit permissions
+    // In this implementation, only 'admin' and 'editor' roles can edit
+    return ['admin', 'editor'].includes(user.role);
 }
 
 /**
  * Initialize authentication UI components
  */
 function initAuthUI() {
+    // Ensure guest token is set if no regular token exists
+    if (!localStorage.getItem('auth_token') && !localStorage.getItem('guest_token')) {
+        localStorage.setItem('guest_token', 'guest_session_' + Date.now());
+    }
+    
     // Add logout handler to logout button if it exists
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
@@ -88,9 +156,17 @@ function initAuthUI() {
     const authElements = document.querySelectorAll('[data-auth-required]');
     const noAuthElements = document.querySelectorAll('[data-auth-forbidden]');
     const userNameElements = document.querySelectorAll('[data-user-name]');
+    const userRoleElements = document.querySelectorAll('[data-user-role]');
+    const userAvatarElements = document.querySelectorAll('[data-user-avatar]');
     
     const isLoggedIn = isAuthenticated();
+    const isGuest = isGuestUser();
     const user = getCurrentUser();
+    const canEdit = hasEditPermission();
+    
+    // Set edit permission attribute on body for CSS selectors
+    document.body.setAttribute('data-edit-permission', canEdit.toString());
+    document.body.setAttribute('data-guest-mode', isGuest.toString());
     
     // Show elements that require authentication
     authElements.forEach(el => {
@@ -99,13 +175,48 @@ function initAuthUI() {
     
     // Show elements that should be hidden when authenticated
     noAuthElements.forEach(el => {
-        el.style.display = isLoggedIn ? 'none' : '';
+        el.style.display = isLoggedIn && !isGuest ? 'none' : '';
     });
     
-    // Update elements with user name
+    // Handle register-now container - show for guests but hide for regular users
+    const registerContainer = document.getElementById('register-now-container');
+    if (registerContainer) {
+        registerContainer.style.display = isGuest ? '' : 'none';
+    }
+    
+    // Handle guest mode indicator - only show for guest users
+    const guestIndicator = document.getElementById('guest-mode-indicator');
+    if (guestIndicator) {
+        guestIndicator.style.display = isGuest ? '' : 'none';
+    }
+    
+    // Update user info elements
     if (user) {
+        // Update username displays
         userNameElements.forEach(el => {
             el.textContent = user.username;
+        });
+        
+        // Update user role displays
+        userRoleElements.forEach(el => {
+            el.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        });
+        
+        // Update user avatar elements with initials
+        userAvatarElements.forEach(el => {
+            // Create initials from username (first letter)
+            let initials = user.username.charAt(0).toUpperCase();
+            if (user.firstName && user.lastName) {
+                initials = user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase();
+            }
+            el.textContent = initials;
+            
+            // Add special styling for guest avatar
+            if (isGuest) {
+                el.classList.add('guest-avatar');
+            } else {
+                el.classList.remove('guest-avatar');
+            }
         });
     }
     
@@ -118,6 +229,12 @@ function initAuthUI() {
             el.style.display = hasRequiredRole ? '' : 'none';
         });
     }
+    
+    // Handle elements that require edit permission
+    const editElements = document.querySelectorAll('.edit-only');
+    editElements.forEach(el => {
+        el.style.display = canEdit ? '' : 'none';
+    });
 }
 
 // Check authentication on page load
@@ -125,9 +242,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize auth UI
     initAuthUI();
     
-    // Redirect to login if authentication is required but user is not logged in
+    // Redirect to login if strict authentication is required but user is not logged in
+    const requiresStrictAuth = document.body.hasAttribute('data-requires-strict-auth');
     const requiresAuth = document.body.hasAttribute('data-requires-auth');
-    if (requiresAuth && !isAuthenticated()) {
+    
+    // Strict auth pages always redirect to login if not authenticated
+    if (requiresStrictAuth && !isAuthenticated()) {
         window.location.href = '/login';
+    }
+    
+    // Regular auth pages just show guest mode with limited functionality
+    else if (requiresAuth && !isAuthenticated()) {
+        console.log("Guest mode active - read-only access enabled");
     }
 });
