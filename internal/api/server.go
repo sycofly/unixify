@@ -8,10 +8,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/home/unixify/internal/auth"
 	"github.com/home/unixify/internal/config"
 	"github.com/home/unixify/internal/handlers"
+	"github.com/home/unixify/internal/repository"
 	"github.com/home/unixify/internal/service"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 // Server represents the API server
@@ -20,6 +23,8 @@ type Server struct {
 	config  *config.Config
 	logger  *logrus.Logger
 	handler *handlers.Handler
+	db      *gorm.DB
+	repo    *repository.Repository
 }
 
 // NewServer creates a new API server
@@ -43,12 +48,18 @@ func NewServer(cfg *config.Config, services *service.Services) *Server {
 	// Initialize handlers
 	handler := handlers.NewHandler(services, logger)
 
+	// Get database connection and repository
+	db := services.GetDB()
+	repo := repository.NewRepository(db)
+
 	// Create server
 	server := &Server{
 		router:  router,
 		config:  cfg,
 		logger:  logger,
 		handler: handler,
+		db:      db,
+		repo:    repo,
 	}
 
 	// Initialize routes
@@ -155,6 +166,31 @@ func (s *Server) initRoutes() {
 		}
 	}
 
+	// Auth handler instance
+	authHandler := handlers.NewAuthHandler(s.db, auth.NewService(*s.config), s.repo)
+	
+	// Authentication middleware
+	authMiddleware := auth.NewService(*s.config).AuthMiddleware()
+	
+	// Auth routes
+	authRoutes := s.router.Group("/api/auth")
+	{
+		authRoutes.POST("/register", authHandler.Register)
+		authRoutes.POST("/login", authHandler.Login)
+		authRoutes.POST("/verify-totp", authHandler.VerifyTOTP)
+		
+		// Protected auth routes
+		protected := authRoutes.Group("/")
+		protected.Use(authMiddleware)
+		{
+			protected.GET("/profile", authHandler.GetProfile)
+			protected.POST("/update-password", authHandler.UpdatePassword)
+			protected.GET("/setup-totp", authHandler.SetupTOTP)
+			protected.POST("/activate-totp", authHandler.ActivateTOTP)
+			protected.POST("/disable-totp", authHandler.DisableTOTP)
+		}
+	}
+
 	// Web interface routes
 	// Add custom template functions
 	funcMap := template.FuncMap{
@@ -163,8 +199,35 @@ func (s *Server) initRoutes() {
 	
 	// Set HTML templates with functions
 	s.router.SetFuncMap(funcMap)
-	s.router.LoadHTMLGlob("web/templates/*")
-	s.router.Static("/static", "web/static")
+	
+	// Get template and static paths from environment variables with fallbacks
+	templatePath := "web/templates/*"
+	if envPath := s.config.GetString("TEMPLATE_PATH"); envPath != "" {
+		templatePath = envPath
+	}
+	s.logger.Infof("Loading templates from: %s", templatePath)
+	
+	staticPath := "web/static"
+	if envPath := s.config.GetString("STATIC_PATH"); envPath != "" {
+		staticPath = envPath
+	}
+	s.logger.Infof("Serving static files from: %s", staticPath)
+	
+	s.router.LoadHTMLGlob(templatePath)
+	s.router.Static("/static", staticPath)
+	
+	// Login/profile routes
+	s.router.GET("/login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.html", gin.H{
+			"title": "Unixify - Login",
+		})
+	})
+	
+	s.router.GET("/profile", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "profile.html", gin.H{
+			"title": "Unixify - My Profile",
+		})
+	})
 	
 	// UI Routes
 	s.router.GET("/", func(c *gin.Context) {

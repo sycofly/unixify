@@ -1,39 +1,69 @@
-Please create a Go application that serves as a registry for UNIX account UIDs and Group GIDs. The application should:
+# Unixify - UNIX Account/Group Registry
 
-1. Use PostgreSQL as the database backend
-2. Provide a Web interface for managing UIDs and GIDs using Gin web framework
-2. Web interface has four sections, People, System, Database and Service
-2. Sections People, System, Database and Service will have an account and group operations
-3. Support the following operations:
-   - Add a new user with a UID
-   - Add a new group with a GID
-   - Assign users to groups
-   - Remove users from groups
-   - List all users
-   - List all groups
-   - List users in a specific group
-   - Look up user by UID
-   - Look up group by GID
-   - soft delete users
-   - Soft delete groups
-   - search database by either UID GID Username Groupname
-   - have a auditing table for all events
-   - System accounts can belong to System Groups
-   - Users accounts can belong to People Groups
-   - Users accounts can belong to Database Groups
-   - Database accounts belong to Database Groups
-   - Database admins belong to People Groups
-   - Service accounts belong to service Groups
+Unixify is a Go application that serves as a registry for UNIX account UIDs and Group GIDs.
 
-4. Include proper validation to ensure:
-   - UIDs and GIDs are unique
-   - UIDs and GIDs are within valid UNIX ranges
-   - Users can't be assigned to non-existent groups
+## Project Overview
 
-5. Implement proper error handling, logging, and data persistence
-6. Follow Go best practices for project structure and code organization
-7. Include Podman files for easy deployment
-8. Include database migration scripts
-9. Provide documentation on how to build, deploy, and use the application
+The application provides a web interface for managing UNIX accounts and groups with the following features:
 
-Please include example usage of the CLI commands and schema design for the PostgreSQL database.
+1. PostgreSQL database backend
+2. Web interface with four sections: People, System, Database, and Service
+3. Complete audit log system for all operations
+4. Full RESTful API for all operations
+
+## Account/Group Types and UID/GID Ranges
+
+| Type     | Account UID Range | Group GID Range |
+|----------|-------------------|-----------------|
+| People   | 1000-6000         | 1000-6000       |
+| System   | 9000-9100         | 9000-9100       |
+| Database | 7000-7999         | 7000-7999       |
+| Service  | 8000-8999         | 8000-8999       |
+
+## Key Operations
+
+- Add/edit/delete accounts and groups
+- Assign/remove users from groups
+- View detailed audit logs of all system events
+- Search by UID, GID, username, or groupname
+
+## Development Commands
+
+```bash
+# Run the application locally
+go run cmd/unixify/main.go
+
+# Build the application
+go build -o unixify cmd/unixify/main.go
+
+# Run database migrations
+go run cmd/migrate/main.go
+```
+
+## Deployment Commands
+
+```bash
+# Start the application with Podman
+podman-compose up -d
+
+# Stop the application
+podman-compose down
+
+# View application logs
+podman logs uno-861-acc-man_unixify_1
+```
+
+## Container Notes
+
+- The application runs on port 8080
+- Templates are stored in `/app/web/templates/`
+- Static assets are in `/app/web/static/`
+- Do NOT use volume mounts that override the container's web directory
+
+## Tech Stack
+
+- Go with Gin web framework
+- PostgreSQL database
+- HTML/CSS/JavaScript frontend
+- RESTful API backend
+- Audit logging for all operations

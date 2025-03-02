@@ -1,125 +1,144 @@
 # Unixify - UNIX Account Management
 
-Unixify is a Go application that serves as a registry for UNIX account UIDs and Group GIDs, providing a web interface for managing these resources.
+![Unixify Logo](https://via.placeholder.com/150x150.png?text=Unixify)
 
-## Features
+Unixify is a comprehensive Go application that serves as a registry for UNIX account UIDs and Group GIDs, providing a modern web interface and API for managing these resources.
 
-- PostgreSQL database backend for data persistence
-- Web interface for managing UIDs and GIDs using Gin web framework
-- Four sections: People, System, Database, and Service
-- Support for account and group operations:
-  - Add users and groups
-  - Assign users to groups
-  - Remove users from groups
-  - List users and groups
-  - Search functionality
-  - Audit logging
+## 🌟 Features
 
-## Prerequisites
+- **PostgreSQL Database**: Robust data persistence with proper relations and constraints
+- **Web Interface**: Clean, responsive UI built with Bootstrap 5 and Gin web framework
+- **Multiple Account Types**: Dedicated sections for People, System, Database, and Service accounts
+- **Group Management**: Create and manage groups with proper GID ranges
+- **Membership Management**: Assign users to appropriate groups with validation
+- **Search Functionality**: Find accounts and groups by UID, username, GID, or groupname
+- **Audit Logging**: Track all changes with detailed audit entries
+- **Soft Deletion**: Preserve data integrity with soft delete for accounts and groups
+- **UID/GID Validation**: Enforce proper UID/GID ranges for different account types
+- **RESTful API**: Comprehensive API for programmatic access
+- **Containerization**: Docker and Podman support for easy deployment
+
+## 📋 Prerequisites
 
 - Go 1.22 or higher
 - PostgreSQL 16 or higher
-- Podman or Docker (for containerized deployment)
+- Podman or Docker (optional, for containerized deployment)
 
-## Getting Started
+## 🚀 Quick Start
+
+### Using Docker/Podman
+
+The fastest way to get started is using Docker Compose:
+
+```bash
+# Clone the repository
+git clone https://github.com/home/unixify.git
+cd unixify
+
+# Start the application and database
+docker-compose up -d
+```
+
+Then access the web interface at http://localhost:8080
 
 ### Local Development
 
-1. Clone this repository:
+1. Clone the repository:
    ```bash
    git clone https://github.com/home/unixify.git
    cd unixify
    ```
 
-2. Set up environment variables or create a `.env` file:
-   ```
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_USER=postgres
-   DB_PASSWORD=postgres
-   DB_NAME=unixify
-   DB_SSLMODE=disable
-   SERVER_PORT=8080
-   GIN_MODE=debug
-   JWT_SECRET=your_secret_key
-   ```
-
-3. Build and run the application:
+2. Create and configure the environment:
    ```bash
-   go build -o unixify ./cmd/unixify
-   ./unixify
+   cp .env.example .env
+   # Edit .env with your database settings
    ```
 
-4. Access the web interface at http://localhost:8080
-
-### Using Podman/Docker
-
-1. Build and run using docker-compose:
+3. Set up the database:
    ```bash
-   podman-compose up -d
-   # or with Docker
-   docker-compose up -d
+   make migrate-up
    ```
 
-2. Access the web interface at http://localhost:8080
+4. Build and run:
+   ```bash
+   make build
+   make run
+   ```
 
-## Database Schema
+5. Access the web interface at http://localhost:8080
+
+## 📊 Database Schema
 
 The application uses the following database schema:
 
-- `accounts`: Stores user accounts with UIDs
-- `groups`: Stores groups with GIDs
-- `account_groups`: Many-to-many relationship between accounts and groups
-- `audit_entries`: Audit log for all actions
+- **accounts**: User accounts with UIDs, usernames, and types
+- **groups**: Groups with GIDs, groupnames, and types
+- **account_groups**: Many-to-many relationship between accounts and groups
+- **audit_entries**: Comprehensive audit log for all system actions
 
-## API Endpoints
-
-### Account Endpoints
-
-- `GET /api/accounts` - Get all accounts
-- `GET /api/accounts/:id` - Get account by ID
-- `POST /api/accounts` - Create a new account
-- `PUT /api/accounts/:id` - Update an account
-- `DELETE /api/accounts/:id` - Delete an account
-- `GET /api/accounts/uid/:uid` - Get account by UID
-- `GET /api/accounts/username/:username` - Get account by username
-- `GET /api/accounts/:id/groups` - Get groups for an account
-
-### Group Endpoints
-
-- `GET /api/groups` - Get all groups
-- `GET /api/groups/:id` - Get group by ID
-- `POST /api/groups` - Create a new group
-- `PUT /api/groups/:id` - Update a group
-- `DELETE /api/groups/:id` - Delete a group
-- `GET /api/groups/gid/:gid` - Get group by GID
-- `GET /api/groups/groupname/:groupname` - Get group by groupname
-- `GET /api/groups/:id/accounts` - Get accounts in a group
-
-### Membership Endpoints
-
-- `POST /api/memberships` - Assign account to group
-- `DELETE /api/memberships` - Remove account from group
-
-### Search Endpoints
-
-- `GET /api/search/accounts?q=query` - Search accounts
-- `GET /api/search/groups?q=query` - Search groups
-
-### Audit Endpoints
-
-- `GET /api/audit` - Get audit entries
-- `GET /api/audit/:id` - Get specific audit entry
-
-## UID and GID Ranges
+## 🔍 UID and GID Ranges
 
 The application enforces the following UID and GID ranges:
 
-- People: 1000-60000
-- System: 1-999
-- Service: 60001-65535
-- Database: 70000-79999
+| Type     | UID/GID Range | Description                                |
+|----------|---------------|--------------------------------------------|
+| People   | 1000-60000    | Regular user accounts and groups           |
+| System   | 1-999         | System accounts and groups                 |
+| Service  | 60001-65535   | Service accounts and application services  |
+| Database | 70000-79999   | Database users and related groups          |
 
-## License
+## 📚 Documentation
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Comprehensive documentation is available in the [docs](docs/) directory:
+
+- [Installation Guide](docs/INSTALL.md): Detailed installation instructions
+- [Usage Guide](docs/USAGE.md): How to use the application
+- API Documentation: Available at `/api` endpoint when running the application
+
+## 🔧 Development
+
+### Makefile Commands
+
+```bash
+# Build the application
+make build
+
+# Run the application
+make run
+
+# Run database migrations
+make migrate-up
+
+# Run database migrations down
+make migrate-down
+
+# Run tests
+make test
+
+# Run linting
+make lint
+
+# Build Docker image
+make docker-build
+
+# Run with Docker
+make docker-run
+
+# Run with Docker Compose
+make docker-compose
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request

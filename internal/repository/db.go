@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/home/unixify/internal/config"
-	"github.com/home/unixify/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -19,16 +18,9 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	// Auto migrate the schema
-	err = db.AutoMigrate(
-		&models.Account{},
-		&models.Group{},
-		&models.AccountGroup{},
-		&models.AuditEntry{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to migrate database: %w", err)
-	}
+	// Skip auto-migration and rely on the SQL migrations
+	// that have already been applied via the migrate tool.
+	// This avoids issues with column naming differences.
 
 	return db, nil
 }

@@ -14,9 +14,10 @@ type Config struct {
 
 // ServerConfig holds server related configuration
 type ServerConfig struct {
-	Port   string
-	Mode   string
-	Secret string
+	Port      string
+	Mode      string
+	Secret    string
+	TOTPIssuer string
 }
 
 // DatabaseConfig holds database related configuration
@@ -33,9 +34,10 @@ type DatabaseConfig struct {
 func Load() (*Config, error) {
 	cfg := &Config{
 		Server: ServerConfig{
-			Port:   getEnvOrDefault("SERVER_PORT", "8080"),
-			Mode:   getEnvOrDefault("GIN_MODE", "debug"),
-			Secret: getEnvOrDefault("JWT_SECRET", "default_secret_change_me"),
+			Port:       getEnvOrDefault("SERVER_PORT", "8080"),
+			Mode:       getEnvOrDefault("GIN_MODE", "debug"),
+			Secret:     getEnvOrDefault("JWT_SECRET", "default_secret_change_me"),
+			TOTPIssuer: getEnvOrDefault("TOTP_ISSUER", "Unixify"),
 		},
 		Database: DatabaseConfig{
 			Host:     getEnvOrDefault("DB_HOST", "localhost"),
@@ -66,4 +68,9 @@ func getEnvOrDefault(key, defaultValue string) string {
 func (c *DatabaseConfig) GetDSN() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		c.Host, c.Port, c.User, c.Password, c.DBName, c.SSLMode)
+}
+
+// GetString gets a string value from environment variables
+func (c *Config) GetString(key string) string {
+	return getEnvOrDefault(key, "")
 }

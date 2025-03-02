@@ -2,79 +2,96 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
-// AccountType represents the type of user account
-type AccountType string
-
-const (
-	AccountTypePeople   AccountType = "people"
-	AccountTypeSystem   AccountType = "system"
-	AccountTypeDatabase AccountType = "database"
-	AccountTypeService  AccountType = "service"
-)
-
-// GroupType represents the type of group
-type GroupType string
-
-const (
-	GroupTypePeople   GroupType = "people"
-	GroupTypeSystem   GroupType = "system"
-	GroupTypeDatabase GroupType = "database"
-	GroupTypeService  GroupType = "service"
-)
-
-// Account represents a UNIX user account
+// Account represents a UNIX account (user)
 type Account struct {
-	ID            uint           `json:"id" gorm:"primaryKey"`
-	UID           int            `json:"uid" gorm:"uniqueIndex;not null"`
-	Username      string         `json:"username" gorm:"uniqueIndex;not null"`
-	Type          AccountType    `json:"type" gorm:"type:varchar(20);not null"`
-	PrimaryGroupID uint          `json:"primary_group_id" gorm:"default:null"`
-	PrimaryGroup  *Group         `json:"primary_group,omitempty" gorm:"foreignKey:PrimaryGroupID"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-	Groups        []*Group       `json:"groups,omitempty" gorm:"many2many:account_groups;"`
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt time.Time `json:"deleted_at" gorm:"index"`
+	Username  string    `json:"username" gorm:"unique"`
+	UID       int       `json:"uid" gorm:"unique"`
+	Type      string    `json:"type" gorm:"index"` // people, system, database, service
+	Active    bool      `json:"active" gorm:"default:true"`
 }
 
 // Group represents a UNIX group
 type Group struct {
-	ID          uint           `json:"id" gorm:"primaryKey"`
-	GID         int            `json:"gid" gorm:"uniqueIndex;not null"`
-	Groupname   string         `json:"groupname" gorm:"uniqueIndex;not null"`
-	Description string         `json:"description" gorm:"type:text"`
-	Type        GroupType      `json:"type" gorm:"type:varchar(20);not null"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-	Accounts    []*Account     `json:"accounts,omitempty" gorm:"many2many:account_groups;"`
-}
-
-// AccountGroup represents the many-to-many relationship between accounts and groups
-type AccountGroup struct {
-	AccountID uint      `gorm:"primaryKey"`
-	GroupID   uint      `gorm:"primaryKey"`
+	ID        uint      `json:"id" gorm:"primaryKey"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt time.Time `json:"deleted_at" gorm:"index"`
+	Groupname string    `json:"groupname" gorm:"unique"`
+	GID       int       `json:"gid" gorm:"unique"`
+	Type      string    `json:"type" gorm:"index"` // people, system, database, service
+	Active    bool      `json:"active" gorm:"default:true"`
+}
+
+// Membership represents the association between accounts and groups
+type Membership struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	CreatedAt time.Time `json:"created_at"`
+	AccountID uint      `json:"account_id" gorm:"index"`
+	GroupID   uint      `json:"group_id" gorm:"index"`
 }
 
 // AuditEntry represents an audit log entry
 type AuditEntry struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Action    string    `json:"action" gorm:"not null"`
-	EntityID  uint      `json:"entity_id"`
-	EntityType string   `json:"entity_type" gorm:"not null"`
-	Details   string    `json:"details"`
-	UserID    uint      `json:"user_id"`
-	Username  string    `json:"username"`
-	IPAddress string    `json:"ip_address"`
-	Timestamp time.Time `json:"timestamp" gorm:"not null"`
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	Timestamp   time.Time `json:"timestamp"`
+	Action      string    `json:"action"`
+	ResourceID  uint      `json:"resource_id"`
+	ResourceType string    `json:"resource_type"`
+	UserID      uint      `json:"user_id"`
+	Username    string    `json:"username"`
+	Details     string    `json:"details"`
+	Section     string    `json:"section"`
 }
 
-// TableName sets the table name for AccountGroup model
-func (AccountGroup) TableName() string {
-	return "account_groups"
+// User represents an authenticated user of the application
+type User struct {
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Username    string    `json:"username" gorm:"unique"`
+	Password    string    `json:"-"` // Never expose in JSON
+	Email       string    `json:"email" gorm:"unique"`
+	Role        string    `json:"role"`
+	TOTPEnabled bool      `json:"totp_enabled"`
+	TOTPSecret  string    `json:"-"` // Store securely, never expose in JSON
+	LastLogin   time.Time `json:"last_login"`
+}
+
+// LoginRequest represents a user login request
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// TOTPSetupResponse is returned when a user sets up TOTP
+type TOTPSetupResponse struct {
+	Secret string `json:"secret"`
+	QRCode string `json:"qr_code"`
+}
+
+// TOTPVerifyRequest contains the TOTP code for verification
+type TOTPVerifyRequest struct {
+	Token string `json:"token" binding:"required"`
+}
+
+// AuthResponse is the response after successful authentication
+type AuthResponse struct {
+	Token       string `json:"token"`
+	RequiresTOTP bool   `json:"requires_totp,omitempty"`
+	User        UserResponse `json:"user"`
+}
+
+// UserResponse contains information about the logged-in user
+type UserResponse struct {
+	ID          uint   `json:"id"`
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	Role        string `json:"role"`
+	TOTPEnabled bool   `json:"totp_enabled"`
 }

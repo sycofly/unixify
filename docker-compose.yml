@@ -19,9 +19,11 @@ services:
       - SERVER_PORT=8080
       - GIN_MODE=debug
       - JWT_SECRET=change_this_in_production
+      - TEMPLATE_PATH=/app/web/templates/*
+      - STATIC_PATH=/app/web/static
     restart: unless-stopped
-    volumes:
-      - ./web:/app/web  # For development, mount the web directory
+    # volumes:
+    #   - /tmp/unixify-web:/app/web  # Mount the web directory from an absolute path
 
   postgres:
     image: docker.io/library/postgres:16-alpine
@@ -37,3 +39,11 @@ services:
 
 volumes:
   postgres_data:
+  
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+      driver: default
+    enable_ipv6: false

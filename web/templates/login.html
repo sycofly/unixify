@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Unixify</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .login-container {
+            max-width: 420px;
+            width: 100%;
+            padding: 2rem;
+        }
+        .login-card {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(45deg, #0d6efd, #0b5ed7);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        .login-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .login-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        .login-body {
+            padding: 2rem;
+        }
+        .login-footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        .totp-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <h4 class="login-title">Unixify</h4>
+                <p class="mb-0">UNIX Account Management</p>
+            </div>
+            <div class="login-body">
+                <div id="login-message" class="alert alert-danger d-none" role="alert"></div>
+                
+                <!-- Login Form -->
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember-me">
+                        <label class="form-check-label" for="remember-me">Remember me</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </form>
+                
+                <!-- TOTP Section (Hidden by default) -->
+                <div id="totp-section" class="totp-section mt-3">
+                    <h5 class="mb-3">Two-Factor Authentication</h5>
+                    <form id="totp-form">
+                        <div class="mb-3">
+                            <label for="totp-code" class="form-label">Enter the 6-digit code from your authenticator app</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                                <input type="text" class="form-control" id="totp-code" name="token" required 
+                                       pattern="[0-9]{6}" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check2"></i> Verify
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="login-footer">
+                <p class="mb-0 text-muted">Unixify &copy; 2025 - A UNIX Account Management System</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form');
+            const totpForm = document.getElementById('totp-form');
+            const totpSection = document.getElementById('totp-section');
+            const messageElement = document.getElementById('login-message');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const passwordInput = document.getElementById('password');
+            
+            // Toggle password visibility
+            togglePasswordBtn.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+            });
+            
+            // Handle login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Clear previous error messages
+                messageElement.classList.add('d-none');
+                
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.requires_totp) {
+                        // Show TOTP verification form
+                        loginForm.style.display = 'none';
+                        totpSection.style.display = 'block';
+                        // Store username for TOTP verification
+                        localStorage.setItem('temp_username', username);
+                    } else if (data.token) {
+                        // Store JWT token
+                        localStorage.setItem('auth_token', data.token);
+                        localStorage.setItem('user_info', JSON.stringify(data.user));
+                        
+                        // Redirect to dashboard
+                        window.location.href = '/';
+                    } else if (data.error) {
+                        // Show error message
+                        messageElement.textContent = data.error;
+                        messageElement.classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    messageElement.textContent = 'An error occurred during login. Please try again.';
+                    messageElement.classList.remove('d-none');
+                });
+            });
+            
+            // Handle TOTP form submission
+            totpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const token = document.getElementById('totp-code').value;
+                const username = localStorage.getItem('temp_username');
+                
+                fetch('/api/auth/verify-totp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        token: token
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.token) {
+                        // Store JWT token
+                        localStorage.setItem('auth_token', data.token);
+                        localStorage.setItem('user_info', JSON.stringify(data.user));
+                        
+                        // Clear temporary storage
+                        localStorage.removeItem('temp_username');
+                        
+                        // Redirect to dashboard
+                        window.location.href = '/';
+                    } else if (data.error) {
+                        // Show error message
+                        messageElement.textContent = data.error;
+                        messageElement.classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('TOTP verification error:', error);
+                    messageElement.textContent = 'An error occurred during verification. Please try again.';
+                    messageElement.classList.remove('d-none');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
