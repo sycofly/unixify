@@ -31,10 +31,13 @@ type Account struct {
 	UpdatedAt      time.Time   `json:"updated_at"`
 	DeletedAt      time.Time   `json:"deleted_at" gorm:"index"`
 	Username       string      `json:"username" gorm:"unique"`
-	UID            int         `json:"uid" gorm:"unique"`
+	UnixUID        int         `json:"uid" gorm:"column:unixuid;unique"` // Using uid for JSON but unixuid for column name
 	Type           AccountType `json:"type" gorm:"index"` // people, system, database, service
 	PrimaryGroupID uint        `json:"primary_group_id" gorm:"index"`
+	PrimaryGroup   *Group      `json:"primary_group" gorm:"-"` // Ignore this field for GORM but keep in JSON
 	Active         bool        `json:"active" gorm:"default:true"`
+	Firstname      string      `json:"firstname"` // First name of the account owner
+	Surname        string      `json:"surname"`   // Last name/surname of the account owner
 }
 
 // Group represents a UNIX group
@@ -44,10 +47,11 @@ type Group struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 	DeletedAt   time.Time `json:"deleted_at" gorm:"index"`
 	Groupname   string    `json:"groupname" gorm:"unique"`
-	GID         int       `json:"gid" gorm:"unique"`
+	UnixGID     int       `json:"gid" gorm:"column:unixgid;unique"` // Using gid for JSON but unixgid for column name
 	Type        GroupType `json:"type" gorm:"index"` // people, system, database, service
 	Description string    `json:"description"`
 	Active      bool      `json:"active" gorm:"default:true"`
+	CreatedBy   string    `json:"created_by"` // Username of the person who created this group
 }
 
 // Membership represents the association between accounts and groups

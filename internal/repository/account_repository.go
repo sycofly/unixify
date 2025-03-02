@@ -28,7 +28,7 @@ func (r *AccountRepository) Create(account *models.Account) error {
 // IsUIDDuplicate checks if a UID already exists
 func (r *AccountRepository) IsUIDDuplicate(uid int, excludeID uint) (bool, error) {
 	var count int64
-	query := r.db.Model(&models.Account{}).Where("uid = ?", uid)
+	query := r.db.Model(&models.Account{}).Where("unixuid = ?", uid)
 	
 	// Exclude current account if updating
 	if excludeID > 0 {
@@ -47,7 +47,7 @@ func (r *AccountRepository) IsUIDDuplicate(uid int, excludeID uint) (bool, error
 func (r *AccountRepository) GetLatestUID(accountType models.AccountType) (int, error) {
 	var account models.Account
 	
-	err := r.db.Where("type = ?", accountType).Order("uid DESC").First(&account).Error
+	err := r.db.Where("type = ?", accountType).Order("unixuid DESC").First(&account).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// No accounts of this type found, return the minimum UID for this type
@@ -68,26 +68,38 @@ func (r *AccountRepository) GetLatestUID(accountType models.AccountType) (int, e
 	}
 	
 	// Return the next available UID (current highest + 1)
-	return account.UID + 1, nil
+	return account.UnixUID + 1, nil
 }
 
 // FindByID finds an account by ID
 func (r *AccountRepository) FindByID(id uint) (*models.Account, error) {
 	var account models.Account
-	err := r.db.Preload("PrimaryGroup").First(&account, id).Error
+	err := r.db.First(&account, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("account with ID %d not found", id)
 		}
 		return nil, err
 	}
+	
+	// Manually load primary group if set
+	if account.PrimaryGroupID > 0 {
+		var group models.Group
+		if err := r.db.First(&group, account.PrimaryGroupID).Error; err != nil {
+			// Log the error but don't fail
+			fmt.Printf("Failed to load primary group for account %d: %v\n", account.ID, err)
+		} else {
+			account.PrimaryGroup = &group
+		}
+	}
+	
 	return &account, nil
 }
 
 // FindByUID finds an account by UID
 func (r *AccountRepository) FindByUID(uid int) (*models.Account, error) {
 	var account models.Account
-	err := r.db.Where("uid = ?", uid).First(&account).Error
+	err := r.db.Where("unixuid = ?", uid).First(&account).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("account with UID %d not found", uid)
@@ -119,11 +131,26 @@ func (r *AccountRepository) FindAll(accountType models.AccountType) ([]models.Ac
 		query = query.Where("type = ?", accountType)
 	}
 
-	// Preload primary group for each account
-	err := query.Preload("PrimaryGroup").Find(&accounts).Error
+	// Get all accounts without preloading initially
+	err := query.Find(&accounts).Error
 	if err != nil {
 		return nil, err
 	}
+
+	// Manually handle the relationship by fetching the primary groups
+	// This avoids using GORM preload which is failing
+	for i := range accounts {
+		if accounts[i].PrimaryGroupID > 0 {
+			var group models.Group
+			if err := r.db.First(&group, accounts[i].PrimaryGroupID).Error; err != nil {
+				// Just log the error and continue
+				fmt.Printf("Failed to load primary group for account %d: %v\n", accounts[i].ID, err)
+				continue
+			}
+			accounts[i].PrimaryGroup = &group
+		}
+	}
+	
 	return accounts, nil
 }
 
@@ -204,7 +231,7 @@ func (r *AccountRepository) RemoveFromGroup(accountID, groupID uint) error {
 // Search searches for accounts by UID or username
 func (r *AccountRepository) Search(query string) ([]models.Account, error) {
 	var accounts []models.Account
-	err := r.db.Where("username LIKE ? OR CAST(uid AS TEXT) LIKE ?", "%"+query+"%", "%"+query+"%").
+	err := r.db.Where("username LIKE ? OR CAST(unixuid AS TEXT) LIKE ?", "%"+query+"%", "%"+query+"%").
 		Find(&accounts).Error
 	if err != nil {
 		return nil, err

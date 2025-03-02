@@ -32,7 +32,7 @@ func NewAccountService(
 // CreateAccount creates a new account
 func (s *AccountService) CreateAccount(account *models.Account, userID uint, username, ipAddress string) error {
 	// Validate UID - now just a warning
-	if err := validator.ValidateUIDForType(account.UID, account.Type); err != nil {
+	if err := validator.ValidateUIDForType(account.UnixUID, account.Type); err != nil {
 		// If it's a warning (starts with "WARNING:"), log it but continue
 		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
 			// Log the warning but continue
@@ -44,12 +44,12 @@ func (s *AccountService) CreateAccount(account *models.Account, userID uint, use
 	}
 
 	// Check if UID already exists using the improved method
-	isDuplicate, err := s.accountRepo.IsUIDDuplicate(account.UID, 0)
+	isDuplicate, err := s.accountRepo.IsUIDDuplicate(account.UnixUID, 0)
 	if err != nil {
 		return err
 	}
 	if isDuplicate {
-		return fmt.Errorf("account with UID %d already exists", account.UID)
+		return fmt.Errorf("account with UID %d already exists", account.UnixUID)
 	}
 
 	// Check if username already exists
@@ -85,7 +85,7 @@ func (s *AccountService) CreateAccount(account *models.Account, userID uint, use
 		Action:     "create",
 		EntityID:   account.ID,
 		EntityType: "account",
-		Details:    fmt.Sprintf("Created account %s with UID %d", account.Username, account.UID),
+		Details:    fmt.Sprintf("Created account %s with UID %d", account.Username, account.UnixUID),
 		UserID:     userID,
 		Username:   username,
 		IPAddress:  ipAddress,
@@ -117,7 +117,7 @@ func (s *AccountService) GetAllAccounts(accountType models.AccountType) ([]model
 // UpdateAccount updates an account
 func (s *AccountService) UpdateAccount(account *models.Account, userID uint, username, ipAddress string) error {
 	// Validate UID - now just a warning
-	if err := validator.ValidateUIDForType(account.UID, account.Type); err != nil {
+	if err := validator.ValidateUIDForType(account.UnixUID, account.Type); err != nil {
 		// If it's a warning (starts with "WARNING:"), log it but continue
 		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
 			// Log the warning but continue
@@ -135,12 +135,12 @@ func (s *AccountService) UpdateAccount(account *models.Account, userID uint, use
 	}
 
 	// Check if UID already exists using the improved method
-	isDuplicate, err := s.accountRepo.IsUIDDuplicate(account.UID, account.ID)
+	isDuplicate, err := s.accountRepo.IsUIDDuplicate(account.UnixUID, account.ID)
 	if err != nil {
 		return err
 	}
 	if isDuplicate {
-		return fmt.Errorf("account with UID %d already exists", account.UID)
+		return fmt.Errorf("account with UID %d already exists", account.UnixUID)
 	}
 
 	// If username is changing, check if new username already exists
@@ -178,7 +178,7 @@ func (s *AccountService) UpdateAccount(account *models.Account, userID uint, use
 		Action:     "update",
 		EntityID:   account.ID,
 		EntityType: "account",
-		Details:    fmt.Sprintf("Updated account %s with UID %d", account.Username, account.UID),
+		Details:    fmt.Sprintf("Updated account %s with UID %d", account.Username, account.UnixUID),
 		UserID:     userID,
 		Username:   username,
 		IPAddress:  ipAddress,
@@ -206,7 +206,7 @@ func (s *AccountService) DeleteAccount(id uint, userID uint, username, ipAddress
 		Action:     "delete",
 		EntityID:   id,
 		EntityType: "account",
-		Details:    fmt.Sprintf("Deleted account %s with UID %d", account.Username, account.UID),
+		Details:    fmt.Sprintf("Deleted account %s with UID %d", account.Username, account.UnixUID),
 		UserID:     userID,
 		Username:   username,
 		IPAddress:  ipAddress,

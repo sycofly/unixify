@@ -10,10 +10,11 @@ import (
 
 // groupInput represents the input for group creation/update
 type groupInput struct {
-	GID         int              `json:"gid" binding:"required"`
+	UnixGID     int              `json:"gid" binding:"required"` // JSON field remains "gid" for backward compatibility
 	Groupname   string           `json:"groupname" binding:"required"`
 	Description string           `json:"description"`
 	Type        models.GroupType `json:"type" binding:"required"`
+	CreatedBy   string           `json:"created_by"` // Optional, will be set by server if not provided
 }
 
 // GetAllGroups handles GET /api/groups
@@ -54,15 +55,15 @@ func (h *Handler) GetGroup(c *gin.Context) {
 
 // GetGroupByGID handles GET /api/groups/gid/:gid
 func (h *Handler) GetGroupByGID(c *gin.Context) {
-	// Parse GID
-	gid, err := strconv.Atoi(c.Param("gid"))
+	// Parse UnixGID
+	unixGID, err := strconv.Atoi(c.Param("gid"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid GID"})
 		return
 	}
 
 	// Get group
-	group, err := h.services.Group.GetGroupByGID(gid)
+	group, err := h.services.Group.GetGroupByGID(unixGID)
 	if err != nil {
 		h.logger.Errorf("Failed to get group by GID: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -102,20 +103,26 @@ func (h *Handler) CreateGroup(c *gin.Context) {
 
 	h.logger.Infof("CreateGroup: Input received: %+v", input)
 
-	// Create group
-	group := &models.Group{
-		GID:         input.GID,
-		Groupname:   input.Groupname,
-		Description: input.Description,
-		Type:        input.Type,
-	}
-
-	h.logger.Infof("CreateGroup: Group object created: %+v", group)
-
-	// Get user info for audit
+	// Get user info for audit and creation
 	userID := uint(0) // In a real app, this would be from the auth middleware
 	username := "admin" // In a real app, this would be from the auth middleware
 	ipAddress := c.ClientIP()
+
+	// Create group
+	group := &models.Group{
+		UnixGID:     input.UnixGID,
+		Groupname:   input.Groupname,
+		Description: input.Description,
+		Type:        input.Type,
+		CreatedBy:   username, // Default to current username
+	}
+	
+	// If created_by was provided in the input, use that instead
+	if input.CreatedBy != "" {
+		group.CreatedBy = input.CreatedBy
+	}
+
+	h.logger.Infof("CreateGroup: Group object created: %+v", group)
 
 	// Create group
 	err := h.services.Group.CreateGroup(group, userID, username, ipAddress)
@@ -154,10 +161,15 @@ func (h *Handler) UpdateGroup(c *gin.Context) {
 	}
 
 	// Update group fields
-	group.GID = input.GID
+	group.UnixGID = input.UnixGID
 	group.Groupname = input.Groupname
 	group.Description = input.Description
 	group.Type = input.Type
+	
+	// Only update created_by if it was provided and the field is currently empty
+	if input.CreatedBy != "" && group.CreatedBy == "" {
+		group.CreatedBy = input.CreatedBy
+	}
 
 	// Get user info for audit
 	userID := uint(0) // In a real app, this would be from the auth middleware
@@ -242,14 +254,14 @@ func (h *Handler) SearchGroups(c *gin.Context) {
 
 // CheckGIDDuplicate handles GET /api/groups/check-duplicate
 func (h *Handler) CheckGIDDuplicate(c *gin.Context) {
-	// Parse GID
+	// Parse UnixGID
 	gidStr := c.Query("gid")
 	if gidStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "GID is required"})
 		return
 	}
 	
-	gid, err := strconv.Atoi(gidStr)
+	unixGID, err := strconv.Atoi(gidStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid GID"})
 		return
@@ -267,8 +279,8 @@ func (h *Handler) CheckGIDDuplicate(c *gin.Context) {
 		excludeID = uint(id)
 	}
 	
-	// Check if GID is duplicate
-	isDuplicate, err := h.services.Group.IsGIDDuplicate(gid, excludeID)
+	// Check if UnixGID is duplicate
+	isDuplicate, err := h.services.Group.IsGIDDuplicate(unixGID, excludeID)
 	if err != nil {
 		h.logger.Errorf("Failed to check for duplicate GID: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check for duplicate"})

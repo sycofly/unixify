@@ -10,10 +10,12 @@ import (
 
 // accountInput represents the input for account creation/update
 type accountInput struct {
-	UID            int                `json:"uid" binding:"required"`
+	UnixUID        int                `json:"uid" binding:"required"` // JSON field remains "uid" for backward compatibility
 	Username       string             `json:"username" binding:"required"`
 	Type           models.AccountType `json:"type" binding:"required"`
 	PrimaryGroupID uint               `json:"primary_group_id"`
+	Firstname      string             `json:"firstname"`
+	Surname        string             `json:"surname"`
 }
 
 // GetAllAccounts handles GET /api/accounts
@@ -54,15 +56,15 @@ func (h *Handler) GetAccount(c *gin.Context) {
 
 // GetAccountByUID handles GET /api/accounts/uid/:uid
 func (h *Handler) GetAccountByUID(c *gin.Context) {
-	// Parse UID
-	uid, err := strconv.Atoi(c.Param("uid"))
+	// Parse UnixUID
+	unixUID, err := strconv.Atoi(c.Param("uid"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UID"})
 		return
 	}
 
 	// Get account
-	account, err := h.services.Account.GetAccountByUID(uid)
+	account, err := h.services.Account.GetAccountByUID(unixUID)
 	if err != nil {
 		h.logger.Errorf("Failed to get account by UID: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -99,10 +101,12 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 
 	// Create account
 	account := &models.Account{
-		UID:            input.UID,
+		UnixUID:        input.UnixUID,
 		Username:       input.Username,
 		Type:           input.Type,
 		PrimaryGroupID: input.PrimaryGroupID,
+		Firstname:      input.Firstname,
+		Surname:        input.Surname,
 	}
 
 	// Get user info for audit
@@ -153,18 +157,20 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 	h.logger.Infof("UpdateAccount: Input received: %+v", input)
 
 	// Log old values for debugging
-	h.logger.Infof("UpdateAccount: Old account values - UID: %d, Username: %s, Type: %s, PrimaryGroupID: %d",
-		account.UID, account.Username, account.Type, account.PrimaryGroupID)
+	h.logger.Infof("UpdateAccount: Old account values - UnixUID: %d, Username: %s, Type: %s, PrimaryGroupID: %d, Firstname: %s, Surname: %s",
+		account.UnixUID, account.Username, account.Type, account.PrimaryGroupID, account.Firstname, account.Surname)
 
 	// Update account fields
-	account.UID = input.UID
+	account.UnixUID = input.UnixUID
 	account.Username = input.Username
 	account.Type = input.Type
 	account.PrimaryGroupID = input.PrimaryGroupID
+	account.Firstname = input.Firstname
+	account.Surname = input.Surname
 
 	// Log new values for debugging
-	h.logger.Infof("UpdateAccount: New account values - UID: %d, Username: %s, Type: %s, PrimaryGroupID: %d",
-		account.UID, account.Username, account.Type, account.PrimaryGroupID)
+	h.logger.Infof("UpdateAccount: New account values - UnixUID: %d, Username: %s, Type: %s, PrimaryGroupID: %d, Firstname: %s, Surname: %s",
+		account.UnixUID, account.Username, account.Type, account.PrimaryGroupID, account.Firstname, account.Surname)
 
 	// Get user info for audit
 	userID := uint(0) // In a real app, this would be from the auth middleware
@@ -260,14 +266,14 @@ func (h *Handler) SearchAccounts(c *gin.Context) {
 
 // CheckUIDDuplicate handles GET /api/accounts/check-duplicate
 func (h *Handler) CheckUIDDuplicate(c *gin.Context) {
-	// Parse UID
+	// Parse UnixUID
 	uidStr := c.Query("uid")
 	if uidStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "UID is required"})
 		return
 	}
 	
-	uid, err := strconv.Atoi(uidStr)
+	unixUID, err := strconv.Atoi(uidStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UID"})
 		return
@@ -285,8 +291,8 @@ func (h *Handler) CheckUIDDuplicate(c *gin.Context) {
 		excludeID = uint(id)
 	}
 	
-	// Check if UID is duplicate
-	isDuplicate, err := h.services.Account.IsUIDDuplicate(uid, excludeID)
+	// Check if UnixUID is duplicate
+	isDuplicate, err := h.services.Account.IsUIDDuplicate(unixUID, excludeID)
 	if err != nil {
 		h.logger.Errorf("Failed to check for duplicate UID: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check for duplicate"})
