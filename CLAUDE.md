@@ -19,10 +19,10 @@ The application provides a web interface for managing UNIX accounts and groups w
 
 | Type     | Account UID Range | Group GID Range |
 |----------|-------------------|-----------------|
-| People   | 1000-6000         | 1000-6000       |
-| System   | 9000-9100         | 9000-9100       |
-| Database | 7000-7999         | 7000-7999       |
-| Service  | 8000-8999         | 8000-8999       |
+| People   | 5000-6000         | 1000-3000       |
+| System   | 1000-2000         | 3000-5000       |
+| Database | 2000-7999         | 2000-7500       |
+| Service  | 8000-8999         | 4000-5000       |
 
 ## Key Operations
 

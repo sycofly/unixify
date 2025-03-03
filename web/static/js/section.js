@@ -425,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!groups || groups.length === 0) {
             const row = document.createElement('tr');
-            row.innerHTML = '<td colspan="6" class="text-center">No groups found</td>';
+            row.innerHTML = '<td colspan="7" class="text-center">No groups found</td>';
             groupsTableBody.appendChild(row);
             return;
         }
@@ -435,11 +435,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Ensure description is displayed properly
             const displayDescription = group.description !== null && group.description !== undefined ? group.description : '';
             
+            // Ensure created_by is displayed properly
+            const displayCreatedBy = group.created_by !== null && group.created_by !== undefined ? group.created_by : '—';
+            
             row.innerHTML = `
                 <td>${group.id}</td>
                 <td>${group.gid}</td>
                 <td>${group.groupname}</td>
                 <td>${displayDescription}</td>
+                <td>${displayCreatedBy}</td>
                 <td>${formatDate(group.created_at)}</td>
                 <td class="action-buttons">
                     <button type="button" class="btn btn-sm btn-primary edit-group" data-id="${group.id}" title="Edit">
@@ -717,6 +721,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Ensure description is never null or undefined
             document.getElementById('groupDescription').value = (group.description !== null && group.description !== undefined) ? group.description : '';
             
+            // Set created_by field if it exists
+            document.getElementById('createdBy').value = (group.created_by !== null && group.created_by !== undefined) ? group.created_by : '';
+            
             // Verify group type matches section type
             if (group.type.toLowerCase() !== sectionType.toLowerCase()) {
                 console.warn(`Group type (${group.type}) doesn't match current section (${sectionType})`);
@@ -799,6 +806,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const gid = parseInt(document.getElementById('gid').value);
             const groupname = document.getElementById('groupname').value;
             const description = document.getElementById('groupDescription').value;
+            const createdBy = document.getElementById('createdBy').value;
             const type = document.getElementById('accountType').value;
             
             // Validate groupname
@@ -807,12 +815,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Ensure description is never undefined or null
+            // Ensure description and created_by are never undefined or null
             const groupData = {
                 gid,
                 groupname,
                 description: description || '',
-                type
+                type,
+                created_by: createdBy || ''
             };
             
             let result;

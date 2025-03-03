@@ -135,7 +135,7 @@
                 </div>
             </div>
             <div class="login-footer">
-                <p class="mb-0 text-muted">Unixify &copy; 2025 - A UNIX Team Management System</p>
+                <p class="mb-0 text-muted">Unixify &copy; 2025 - UNIX Account Management</p>
             </div>
         </div>
     </div>
@@ -180,42 +180,34 @@
                 // Clear previous error messages
                 messageElement.classList.add('d-none');
                 
-                fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.requires_totp) {
-                        // Show TOTP verification form
-                        loginForm.style.display = 'none';
-                        totpSection.style.display = 'block';
-                        // Store username for TOTP verification
-                        localStorage.setItem('temp_username', username);
-                    } else if (data.token) {
-                        // Store JWT token
-                        localStorage.setItem('auth_token', data.token);
-                        localStorage.setItem('user_info', JSON.stringify(data.user));
-                        
-                        // Redirect to dashboard
-                        window.location.href = '/';
-                    } else if (data.error) {
-                        // Show error message
-                        messageElement.textContent = data.error;
-                        messageElement.classList.remove('d-none');
-                    }
-                })
-                .catch(error => {
-                    console.error('Login error:', error);
-                    messageElement.textContent = 'An error occurred during login. Please try again.';
-                    messageElement.classList.remove('d-none');
-                });
+                // For demo purposes - handle login locally without server
+                if (username === 'pfrederi') {
+                    // Create admin user data
+                    const adminUser = {
+                        id: 1,
+                        username: "pfrederi",
+                        email: "pfrederi@example.com",
+                        firstName: "Peter",
+                        lastName: "Frederi",
+                        role: "admin",
+                        department: "IT",
+                        isGuest: false
+                    };
+                    
+                    // Set admin user data
+                    localStorage.setItem('user_info', JSON.stringify(adminUser));
+                    localStorage.setItem('auth_token', 'admin_token_' + Date.now());
+                    localStorage.removeItem('guest_token'); // Remove guest token
+                    localStorage.setItem('admin_user_created', 'true');
+                    
+                    // Redirect to homepage
+                    window.location.href = '/';
+                    return;
+                }
+                
+                // Show error message for non-pfrederi users
+                messageElement.textContent = 'Only the pfrederi admin account is available in this demo.';
+                messageElement.classList.remove('d-none');
             });
             
             // Handle TOTP form submission

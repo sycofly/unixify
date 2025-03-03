@@ -15,7 +15,9 @@ import (
 func main() {
 	// Parse command line arguments
 	var direction string
+	var forceVersion int
 	flag.StringVar(&direction, "direction", "up", "Migration direction (up or down)")
+	flag.IntVar(&forceVersion, "force", -1, "Force database version (use with caution)")
 	flag.Parse()
 
 	// Load environment variables
@@ -39,6 +41,16 @@ func main() {
 	m, err := migrate.New("file://db/migrations", dbURL)
 	if err != nil {
 		log.Fatalf("Migration failed to initialize: %v", err)
+	}
+
+	// Handle force version mode
+	if forceVersion >= 0 {
+		err := m.Force(forceVersion)
+		if err != nil {
+			log.Fatalf("Failed to force version to %d: %v", forceVersion, err)
+		}
+		log.Printf("Successfully forced database version to %d", forceVersion)
+		return
 	}
 
 	// Run migrations

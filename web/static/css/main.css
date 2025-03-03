@@ -179,6 +179,31 @@ body {
     color: #0d6efd;
 }
 
+[data-theme="dark"] .card-title {
+    color: #6ea8fe;
+}
+
+/* Management section card color fixes for dark mode */
+[data-theme="dark"] .card-text {
+    color: #e4e6eb;
+}
+
+[data-theme="dark"] .section-people .card-title {
+    color: #6ea8fe;
+}
+
+[data-theme="dark"] .section-system .card-title {
+    color: #5dd095;
+}
+
+[data-theme="dark"] .section-database .card-title {
+    color: #f27c89;
+}
+
+[data-theme="dark"] .section-service .card-title {
+    color: #ffb777;
+}
+
 .card-body {
     padding: 1.5rem;
 }
@@ -515,7 +540,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* Colored icons for sections */
+/* Colored icons for sections - light mode */
 .section-people .section-icon i {
     color: #0d6efd !important;
 }
@@ -530,6 +555,23 @@ body {
 
 .section-service .section-icon i {
     color: #fd7e14 !important;
+}
+
+/* Colored icons for sections - dark mode */
+[data-theme="dark"] .section-people .section-icon i {
+    color: #6ea8fe !important;
+}
+
+[data-theme="dark"] .section-system .section-icon i {
+    color: #5dd095 !important;
+}
+
+[data-theme="dark"] .section-database .section-icon i {
+    color: #f27c89 !important;
+}
+
+[data-theme="dark"] .section-service .section-icon i {
+    color: #ffb777 !important;
 }
 
 /* Also color the nav icons */

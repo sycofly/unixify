@@ -28,8 +28,10 @@ WORKDIR /app
 # Copy binary from build stage
 COPY --from=builder /app/unixify /app/unixify
 
-# Copy web templates and static files
-COPY ./web-build /app/web
+# Copy web templates and static files from the actual source directory
+COPY ./web /app/web
+
+# No email configuration needed here since we're using MailHog as a separate service
 
 # Expose port
 EXPOSE 8080

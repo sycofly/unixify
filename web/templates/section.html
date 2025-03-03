@@ -116,23 +116,23 @@
                         <tbody>
                             <tr>
                                 <td><span class="badge bg-primary">People</span></td>
-                                <td>1000-60000</td>
-                                <td>1000-60000</td>
+                                <td>5000-6000</td>
+                                <td>1000-3000</td>
                             </tr>
                             <tr>
-                                <td><span class="badge bg-secondary">System</span></td>
-                                <td>9000-9100</td>
-                                <td>9000-9100</td>
+                                <td><span class="badge bg-success">System</span></td>
+                                <td>1000-2000</td>
+                                <td>3000-5000</td>
                             </tr>
                             <tr>
-                                <td><span class="badge bg-info">Database</span></td>
-                                <td>70000-79999</td>
-                                <td>70000-79999</td>
+                                <td><span class="badge bg-danger">Database</span></td>
+                                <td>2000-7999</td>
+                                <td>2000-7500</td>
                             </tr>
                             <tr>
-                                <td><span class="badge bg-success">Service</span></td>
-                                <td>60001-65535</td>
-                                <td>60001-65535</td>
+                                <td><span class="badge bg-warning">Service</span></td>
+                                <td>8000-8999</td>
+                                <td>4000-5000</td>
                             </tr>
                         </tbody>
                     </table>
@@ -175,7 +175,7 @@
             <div class="tab-pane fade show active p-3" id="accounts" role="tabpanel" aria-labelledby="accounts-tab">
                 <div class="d-flex justify-content-between mb-3 align-items-center">
                     <h2>{{ title .section }} Accounts</h2>
-                    <button type="button" class="btn btn-primary edit-only" id="newAccountBtn">
+                    <button type="button" class="btn btn-primary" id="newAccountBtn">
                         <i class="bi bi-plus-circle"></i> New Account
                     </button>
                 </div>
@@ -204,7 +204,7 @@
             <div class="tab-pane fade p-3" id="groups" role="tabpanel" aria-labelledby="groups-tab">
                 <div class="d-flex justify-content-between mb-3 align-items-center">
                     <h2>{{ title .section }} Groups</h2>
-                    <button type="button" class="btn btn-primary edit-only" id="newGroupBtn">
+                    <button type="button" class="btn btn-primary" id="newGroupBtn">
                         <i class="bi bi-plus-circle"></i> New Group
                     </button>
                 </div>
@@ -216,6 +216,7 @@
                                 <th>GID</th>
                                 <th>Groupname</th>
                                 <th>Description</th>
+                                <th>Created By</th>
                                 <th>Created</th>
                                 <th>Actions</th>
                             </tr>
@@ -223,7 +224,7 @@
                         <tbody id="groupsTableBody">
                             <!-- Will be populated by JavaScript -->
                             <tr>
-                                <td colspan="6" class="text-center">Loading groups...</td>
+                                <td colspan="7" class="text-center">Loading groups...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -401,6 +402,11 @@
                             <label for="groupDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="groupDescription" rows="3"></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label for="createdBy" class="form-label">Created By</label>
+                            <input type="text" class="form-control" id="createdBy" placeholder="Leave blank to use your username">
+                            <div class="form-text">Who is responsible for creating this group?</div>
+                        </div>
                         <input type="hidden" id="groupType" value="{{ .section }}">
                     </form>
                 </div>
@@ -485,7 +491,7 @@
 
     <footer class="py-3 mt-5 border-top">
         <div class="container text-center">
-            <p class="mb-0">Unixify &copy; 2025 - UNIX Team Management System</p>
+            <p class="mb-0">Unixify &copy; 2025 - UNIX Account Management</p>
         </div>
     </footer>
 

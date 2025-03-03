@@ -76,13 +76,13 @@
     
         <div class="jumbotron bg-light p-5 rounded shadow-sm mb-5">
             <h1 class="display-4"><i class="bi bi-person-badge"></i> Unixify</h1>
-            <p class="lead jumbotron-tagline">A comprehensive UNIX account UID and Group GID management system</p>
+            <p class="lead jumbotron-tagline">UNIX Account UID and Group GID Registry</p>
             <hr class="my-4">
             <p>Organize and manage your UNIX identities across different account types with a unified interface.</p>
             <p class="d-flex gap-2">
                 <a href="/people" class="btn btn-primary">Get Started</a>
                 <a href="/claude" class="btn btn-outline-secondary learn-more-btn">Learn More</a>
-                <a href="/register" class="btn btn-outline-secondary register-btn" data-auth-forbidden>Register</a>
+                <a href="/register" class="btn btn-outline-secondary register-btn">Register</a>
             </p>
         </div>
 
@@ -186,30 +186,30 @@
                     <thead>
                         <tr>
                             <th>Type</th>
-                            <th>UID/GID Range</th>
+                            <th>Range</th>
                             <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><span class="badge bg-primary range-badge">People</span></td>
-                            <td>1000-60000</td>
+                            <td>Account UID: 5000-6000<br>Group GID: 1000-3000</td>
                             <td>Regular user accounts and groups</td>
                         </tr>
                         <tr>
                             <td><span class="badge bg-success range-badge">System</span></td>
-                            <td>9000-9100</td>
+                            <td>Account UID: 1000-2000<br>Group GID: 3000-5000</td>
                             <td>System accounts and groups</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-warning range-badge">Service</span></td>
-                            <td>60001-65535</td>
-                            <td>Service accounts and groups</td>
+                            <td><span class="badge bg-danger range-badge">Database</span></td>
+                            <td>Account UID: 2000-7999<br>Group GID: 2000-7500</td>
+                            <td>Database accounts and groups</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-danger range-badge">Database</span></td>
-                            <td>70000-79999</td>
-                            <td>Database accounts and groups</td>
+                            <td><span class="badge bg-warning range-badge">Service</span></td>
+                            <td>Account UID: 8000-8999<br>Group GID: 4000-5000</td>
+                            <td>Service accounts and groups</td>
                         </tr>
                     </tbody>
                 </table>
@@ -219,7 +219,7 @@
 
     <footer class="py-3 mt-5 border-top">
         <div class="container text-center">
-            <p class="mb-0">Unixify &copy; 2025 - UNIX Team Management System</p>
+            <p class="mb-0">Unixify &copy; 2025 - UNIX Account Management</p>
         </div>
     </footer>
 

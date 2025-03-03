@@ -101,10 +101,38 @@ type User struct {
 	LastLogin   time.Time `json:"last_login"`
 }
 
+// RegisteredUser represents a registered user with enhanced security
+type RegisteredUser struct {
+	ID           uint      `json:"id" gorm:"primaryKey" sql:"AUTO_INCREMENT"`
+	Username     string    `json:"username" gorm:"unique;not null"`
+	Email        string    `json:"email" gorm:"unique;not null"`
+	PasswordHash []byte    `json:"-" gorm:"column:password_hash;not null"` // Stored encrypted, never expose in JSON
+	FirstName    string    `json:"first_name" gorm:"not null"`
+	LastName     string    `json:"last_name" gorm:"not null"`
+	Department   string    `json:"department"`
+	Role         string    `json:"role" gorm:"not null;default:'user'"`
+	TOTPEnabled  bool      `json:"totp_enabled" gorm:"default:false"`
+	TOTPSecret   string    `json:"-" gorm:"column:totp_secret"` // Store securely, never expose in JSON
+	IsActive     bool      `json:"is_active" gorm:"default:true"`
+	LastLogin    time.Time `json:"last_login"`
+	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
 // LoginRequest represents a user login request
 type LoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+// RegisterUserRequest represents a request to register a new user
+type RegisterUserRequest struct {
+	Username    string `json:"username" binding:"required,min=3,max=50"`
+	Email       string `json:"email" binding:"required,email"`
+	Password    string `json:"password" binding:"required,min=8"`
+	FirstName   string `json:"firstName" binding:"required"`
+	LastName    string `json:"lastName" binding:"required"`
+	Department  string `json:"department"`
 }
 
 // TOTPSetupResponse is returned when a user sets up TOTP

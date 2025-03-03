@@ -94,9 +94,17 @@ async function apiRequest(url, method = 'GET', data = null) {
     }
 }
 
-// Format date string
+// Format date string using the International Standard format (ISO 8601)
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleString();
+    // Format as YYYY-MM-DD HH:MM:SS
+    return date.getFullYear() + '-' + 
+           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(date.getDate()).padStart(2, '0') + ' ' + 
+           String(date.getHours()).padStart(2, '0') + ':' + 
+           String(date.getMinutes()).padStart(2, '0') + ':' + 
+           String(date.getSeconds()).padStart(2, '0');
 }
+
+// No longer needed - moved to auth.js to ensure it runs before any auth checks

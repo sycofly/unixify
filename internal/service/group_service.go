@@ -32,7 +32,7 @@ func NewGroupService(
 // CreateGroup creates a new group
 func (s *GroupService) CreateGroup(group *models.Group, userID uint, username, ipAddress string) error {
 	// Validate GID - now just a warning
-	if err := validator.ValidateGIDForType(group.GID, group.Type); err != nil {
+	if err := validator.ValidateGIDForType(group.UnixGID, group.Type); err != nil {
 		// If it's a warning (starts with "WARNING:"), log it but continue
 		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
 			// Log the warning but continue
@@ -44,12 +44,12 @@ func (s *GroupService) CreateGroup(group *models.Group, userID uint, username, i
 	}
 
 	// Check if GID already exists using the improved method
-	isDuplicate, err := s.groupRepo.IsGIDDuplicate(group.GID, 0)
+	isDuplicate, err := s.groupRepo.IsGIDDuplicate(group.UnixGID, 0)
 	if err != nil {
 		return err
 	}
 	if isDuplicate {
-		return fmt.Errorf("group with GID %d already exists", group.GID)
+		return fmt.Errorf("group with GID %d already exists", group.UnixGID)
 	}
 
 	// Check if groupname already exists
@@ -69,7 +69,7 @@ func (s *GroupService) CreateGroup(group *models.Group, userID uint, username, i
 		Action:     "create",
 		EntityID:   group.ID,
 		EntityType: "group",
-		Details:    fmt.Sprintf("Created group %s with GID %d", group.Groupname, group.GID),
+		Details:    fmt.Sprintf("Created group %s with GID %d", group.Groupname, group.UnixGID),
 		UserID:     userID,
 		Username:   username,
 		IPAddress:  ipAddress,
@@ -101,7 +101,7 @@ func (s *GroupService) GetAllGroups(groupType models.GroupType) ([]models.Group,
 // UpdateGroup updates a group
 func (s *GroupService) UpdateGroup(group *models.Group, userID uint, username, ipAddress string) error {
 	// Validate GID - now just a warning
-	if err := validator.ValidateGIDForType(group.GID, group.Type); err != nil {
+	if err := validator.ValidateGIDForType(group.UnixGID, group.Type); err != nil {
 		// If it's a warning (starts with "WARNING:"), log it but continue
 		if len(err.Error()) >= 7 && err.Error()[:7] == "WARNING" {
 			// Log the warning but continue
@@ -119,12 +119,12 @@ func (s *GroupService) UpdateGroup(group *models.Group, userID uint, username, i
 	}
 
 	// Check if GID already exists using the improved method
-	isDuplicate, err := s.groupRepo.IsGIDDuplicate(group.GID, group.ID)
+	isDuplicate, err := s.groupRepo.IsGIDDuplicate(group.UnixGID, group.ID)
 	if err != nil {
 		return err
 	}
 	if isDuplicate {
-		return fmt.Errorf("group with GID %d already exists", group.GID)
+		return fmt.Errorf("group with GID %d already exists", group.UnixGID)
 	}
 
 	// If groupname is changing, check if new groupname already exists
@@ -146,7 +146,7 @@ func (s *GroupService) UpdateGroup(group *models.Group, userID uint, username, i
 		Action:     "update",
 		EntityID:   group.ID,
 		EntityType: "group",
-		Details:    fmt.Sprintf("Updated group %s with GID %d", group.Groupname, group.GID),
+		Details:    fmt.Sprintf("Updated group %s with GID %d", group.Groupname, group.UnixGID),
 		UserID:     userID,
 		Username:   username,
 		IPAddress:  ipAddress,
@@ -174,7 +174,7 @@ func (s *GroupService) DeleteGroup(id uint, userID uint, username, ipAddress str
 		Action:     "delete",
 		EntityID:   id,
 		EntityType: "group",
-		Details:    fmt.Sprintf("Deleted group %s with GID %d", group.Groupname, group.GID),
+		Details:    fmt.Sprintf("Deleted group %s with GID %d", group.Groupname, group.UnixGID),
 		UserID:     userID,
 		Username:   username,
 		IPAddress:  ipAddress,

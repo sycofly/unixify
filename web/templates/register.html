@@ -141,7 +141,7 @@
             <div class="register-body">
                 <div id="registration-message" class="alert alert-info mb-4">
                     <i class="bi bi-info-circle-fill me-2"></i>
-                    <span>Registration requires admin approval before you can edit data.</span>
+                    <span>Registration requires admin approval.</span>
                 </div>
                 
                 <!-- Registration Steps -->
@@ -229,7 +229,7 @@
                             <label class="form-check-label" for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
                         </div>
                         
-                        <button type="submit" class="btn btn-success w-100">
+                        <button type="submit" class="btn btn-success w-100" id="register-btn">
                             <i class="bi bi-check-circle"></i> Register Account
                         </button>
                     </form>
@@ -239,23 +239,23 @@
                 <div id="registration-step-2" style="display: none;">
                     <div class="text-center mb-4">
                         <i class="bi bi-envelope-check" style="font-size: 4rem; color: #198754;"></i>
-                        <h3 class="mt-3">Check Your Email</h3>
-                        <p>We've sent a verification email to <strong id="verification-email"></strong></p>
-                        <p>Please click the link in the email to verify your account.</p>
+                        <h3 class="mt-3">Account Created</h3>
+                        <p>Your account has been created with the email address: <strong id="verification-email"></strong></p>
+                        <p>Please check your email for verification instructions.</p>
                     </div>
                     
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <span>For this demo, we'll simulate email verification.</span>
+                    <div class="alert alert-success" id="verification-alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span>Account created successfully! A confirmation email has been sent.</span>
                     </div>
                     
                     <div class="d-grid gap-2">
                         <button id="simulate-verification" class="btn btn-primary">
-                            <i class="bi bi-envelope-check"></i> Simulate Email Verification
+                            <i class="bi bi-arrow-right-circle"></i> Proceed to Next Step
                         </button>
-                        <button id="resend-email" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-clockwise"></i> Resend Verification Email
-                        </button>
+                        <a href="http://localhost:8025" target="_blank" class="btn btn-outline-secondary">
+                            <i class="bi bi-envelope-open"></i> Check Email Inbox
+                        </a>
                     </div>
                 </div>
                 
@@ -263,19 +263,18 @@
                 <div id="registration-step-3" style="display: none;">
                     <div class="text-center mb-4">
                         <i class="bi bi-person-check" style="font-size: 4rem; color: #198754;"></i>
-                        <h3 class="mt-3">Waiting for Approval</h3>
-                        <p>Your account has been created and is pending administrator approval.</p>
-                        <p>You'll receive an email when your account has been approved.</p>
+                        <h3 class="mt-3">Almost Done!</h3>
+                        <p>Your account has been created and just needs admin approval.</p>
                     </div>
                     
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
-                        <span>You can use the application in read-only mode while waiting for approval.</span>
+                        <span>For this demo, you can complete the registration immediately.</span>
                     </div>
                     
                     <div class="d-grid gap-2">
                         <button id="simulate-approval" class="btn btn-success">
-                            <i class="bi bi-check-circle"></i> Simulate Admin Approval
+                            <i class="bi bi-check-circle"></i> Complete Registration
                         </button>
                         <a href="/" class="btn btn-outline-primary">
                             <i class="bi bi-house"></i> Continue to Homepage
@@ -289,16 +288,16 @@
                         <i class="bi bi-check-circle-fill" style="font-size: 4rem; color: #198754;"></i>
                         <h3 class="mt-3">Registration Complete!</h3>
                         <p>Your account has been approved and is now active.</p>
-                        <p>You can now log in and edit data in the system.</p>
+                        <p id="admin-status-message">You can now log in to the system.</p>
                     </div>
                     
-                    <div class="alert alert-success">
+                    <div class="alert alert-success" id="permissions-alert">
                         <i class="bi bi-unlock me-2"></i>
-                        <span>Full edit permissions have been granted to your account.</span>
+                        <span>Your account has been approved.</span>
                     </div>
                     
-                    <div class="d-grid gap-2">
-                        <a href="/login" class="btn btn-primary">
+                    <div class="d-grid gap-2" id="completion-buttons">
+                        <a href="/login" class="btn btn-primary" id="login-button">
                             <i class="bi bi-box-arrow-in-right"></i> Go to Login
                         </a>
                         <a href="/" class="btn btn-outline-secondary">
@@ -312,7 +311,7 @@
                 </div>
             </div>
             <div class="register-footer">
-                <p class="mb-0">Unixify &copy; 2025 - UNIX Team Management System</p>
+                <p class="mb-0">Unixify &copy; 2025 - UNIX Account Management</p>
             </div>
         </div>
     </div>
@@ -338,57 +337,106 @@
             // Registration form handling
             const registrationForm = document.getElementById('registration-form');
             const messageElement = document.getElementById('registration-message');
+            const registerBtn = document.getElementById('register-btn');
+            
+            // Add direct click handler to register button as a fallback
+            if (registerBtn) {
+                registerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    submitRegistrationForm();
+                });
+            }
+            
+            function submitRegistrationForm() {
+                // Get form values
+                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                // Basic validation
+                if (password !== confirmPassword) {
+                    messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Passwords do not match';
+                    messageElement.className = 'alert alert-danger mb-4';
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Password must be at least 8 characters long';
+                    messageElement.className = 'alert alert-danger mb-4';
+                    return;
+                }
+                
+                // Create user data
+                const userData = {
+                    username: username,
+                    email: email,
+                    firstName: document.getElementById('first-name').value,
+                    lastName: document.getElementById('last-name').value,
+                    department: document.getElementById('department').value,
+                    password: password
+                };
+                
+                // Store email for reference
+                localStorage.setItem('lastRegisteredEmail', email);
+                
+                // Send actual API request to create user
+                fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Registration response:", data);
+                    if (data.error) {
+                        // Show error message
+                        messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + data.error;
+                        messageElement.className = 'alert alert-danger mb-4';
+                        return;
+                    }
+                    
+                    // If successful, continue with the flow
+                    if (data.token) {
+                        // Store the token and user info
+                        localStorage.setItem('auth_token', data.token);
+                        localStorage.setItem('user_info', JSON.stringify(data.user));
+                        localStorage.removeItem('guest_token'); // Remove guest token if exists
+                    }
+                })
+                .catch(error => {
+                    console.error("Registration error:", error);
+                    messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Error during registration. Please try again.';
+                    messageElement.className = 'alert alert-danger mb-4';
+                    return;
+                });
+                
+                // Special handling for peter.frederikson@gmail.com
+                if (email === 'peter.frederikson@gmail.com') {
+                    document.getElementById('verification-alert').innerHTML = 
+                        '<i class="bi bi-shield-check me-2"></i>' +
+                        '<span><strong>ADMIN ACCOUNT DETECTED:</strong> Special registration process activated for admin account.</span>';
+                    
+                    console.log("Special admin account detected: " + email);
+                }
+                
+                // Move to step 2
+                document.getElementById('registration-step-1').style.display = 'none';
+                document.getElementById('registration-step-2').style.display = 'block';
+                document.getElementById('verification-email').textContent = email;
+                
+                // Update steps indicator
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step2').classList.add('active');
+            }
             
             if (registrationForm) {
                 registrationForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    
-                    // Get form values
-                    const username = document.getElementById('username').value;
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    const confirmPassword = document.getElementById('confirm-password').value;
-                    
-                    // Basic validation
-                    if (password !== confirmPassword) {
-                        messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Passwords do not match';
-                        messageElement.className = 'alert alert-danger mb-4';
-                        return;
-                    }
-                    
-                    if (password.length < 8) {
-                        messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Password must be at least 8 characters long';
-                        messageElement.className = 'alert alert-danger mb-4';
-                        return;
-                    }
-                    
-                    // Store user info (for demo purposes only - in a real app, this would go to the server)
-                    const newUser = {
-                        username: username,
-                        email: email,
-                        firstName: document.getElementById('first-name').value,
-                        lastName: document.getElementById('last-name').value,
-                        department: document.getElementById('department').value,
-                        role: 'user',
-                        status: 'pending_verification',
-                        registeredAt: new Date().toISOString()
-                    };
-                    
-                    // Store in localStorage for demo purposes
-                    const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
-                    pendingUsers.push(newUser);
-                    localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
-                    localStorage.setItem('lastRegisteredEmail', email);
-                    
-                    // Move to step 2
-                    document.getElementById('registration-step-1').style.display = 'none';
-                    document.getElementById('registration-step-2').style.display = 'block';
-                    document.getElementById('verification-email').textContent = email;
-                    
-                    // Update steps indicator
-                    document.getElementById('step1').classList.remove('active');
-                    document.getElementById('step1').classList.add('completed');
-                    document.getElementById('step2').classList.add('active');
+                    submitRegistrationForm();
                 });
             }
             
@@ -405,6 +453,15 @@
                     if (userIndex !== -1) {
                         pendingUsers[userIndex].status = 'pending_approval';
                         localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                        
+                        // Special handling for peter.frederikson@gmail.com
+                        if (email === 'peter.frederikson@gmail.com') {
+                            console.log("Special admin account detected in step 2: " + email);
+                            
+                            // Skip ahead to admin approval
+                            pendingUsers[userIndex].role = 'admin';
+                            localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                        }
                     }
                     
                     // Move to step 3
@@ -433,6 +490,18 @@
                         
                         // Move from pendingUsers to registeredUsers
                         const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                        
+                        // Special case for peter.frederikson@gmail.com - make an admin
+                        if (pendingUsers[userIndex].email === 'peter.frederikson@gmail.com') {
+                            pendingUsers[userIndex].role = 'admin';
+                            // Auto login this user as admin
+                            localStorage.setItem('user_info', JSON.stringify(pendingUsers[userIndex]));
+                            localStorage.setItem('auth_token', 'admin_token_' + Date.now());
+                            localStorage.removeItem('guest_token');
+                            localStorage.setItem('admin_user_created', 'true');
+                            console.log("Admin access granted to: peter.frederikson@gmail.com");
+                        }
+                        
                         registeredUsers.push(pendingUsers[userIndex]);
                         pendingUsers.splice(userIndex, 1);
                         
@@ -447,6 +516,24 @@
                     // Update steps indicator
                     document.getElementById('step3').classList.remove('active');
                     document.getElementById('step3').classList.add('completed');
+                    
+                    // Check if this is the special admin account
+                    if (email === 'peter.frederikson@gmail.com') {
+                        // Update admin status message
+                        document.getElementById('admin-status-message').innerHTML = 
+                            'You have been granted <strong>ADMIN ACCESS</strong> and are already logged in!';
+                        
+                        // Update permissions alert
+                        document.getElementById('permissions-alert').innerHTML = 
+                            '<i class="bi bi-shield-check me-2"></i>' +
+                            '<span><strong>ADMIN PRIVILEGES ACTIVATED:</strong> You have full administrative access to the system.</span>';
+                        
+                        // Hide login button, only show homepage button
+                        document.getElementById('login-button').style.display = 'none';
+                        document.getElementById('completion-buttons').innerHTML = 
+                            '<a href="/" class="btn btn-success">' +
+                            '<i class="bi bi-house"></i> Go to Homepage as Admin</a>';
+                    }
                 });
             }
             

@@ -246,22 +246,43 @@ function initAuthUI() {
 
 // Check authentication on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Ensure guest token is set if no regular token exists for automatic guest mode
-    if (!localStorage.getItem('auth_token') && !localStorage.getItem('guest_token')) {
-        localStorage.setItem('guest_token', 'guest_session_' + Date.now());
-        console.log("Auto-creating guest session");
-    }
+    // ALWAYS create admin user and NEVER create guest token
+    // This ensures we're always logged in as admin
+    
+    // Create admin user data
+    const adminUser = {
+        id: 1,
+        username: "pfrederi",
+        email: "pfrederi@example.com",
+        firstName: "Peter",
+        lastName: "Frederi",
+        role: "admin",
+        department: "IT",
+        isGuest: false
+    };
+    
+    // Set admin user data
+    localStorage.setItem('user_info', JSON.stringify(adminUser));
+    localStorage.setItem('auth_token', 'admin_token_' + Date.now());
+    localStorage.removeItem('guest_token'); // Remove any guest token
+    localStorage.setItem('admin_user_created', 'true');
+    
+    console.log("Admin user enforced: pfrederi");
     
     // Initialize auth UI
     initAuthUI();
     
-    // Redirect to login if strict authentication is required but user is not logged in
-    const requiresStrictAuth = document.body.hasAttribute('data-requires-strict-auth');
-    
-    // Only strictly protected pages redirect to login
-    if (requiresStrictAuth && !isAuthenticated()) {
-        window.location.href = '/login';
-    } else {
-        console.log("Guest mode active or user authenticated");
+    // Show admin status banner on pages with a container
+    const container = document.querySelector('.container');
+    if (container) {
+        const adminDiv = document.createElement('div');
+        adminDiv.className = 'alert alert-success alert-dismissible fade show';
+        adminDiv.innerHTML = `
+            <strong>Admin Access:</strong> You are logged in as pfrederi (admin)
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        setTimeout(() => {
+            container.insertBefore(adminDiv, container.firstChild);
+        }, 500); // Slight delay to ensure DOM is ready
     }
 });

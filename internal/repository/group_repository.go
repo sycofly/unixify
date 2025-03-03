@@ -28,7 +28,7 @@ func (r *GroupRepository) Create(group *models.Group) error {
 // IsGIDDuplicate checks if a GID already exists
 func (r *GroupRepository) IsGIDDuplicate(gid int, excludeID uint) (bool, error) {
 	var count int64
-	query := r.db.Model(&models.Group{}).Where("gid = ?", gid)
+	query := r.db.Model(&models.Group{}).Where("unixgid = ?", gid)
 	
 	// Exclude current group if updating
 	if excludeID > 0 {
@@ -47,7 +47,7 @@ func (r *GroupRepository) IsGIDDuplicate(gid int, excludeID uint) (bool, error) 
 func (r *GroupRepository) GetLatestGID(groupType models.GroupType) (int, error) {
 	var group models.Group
 	
-	err := r.db.Where("type = ?", groupType).Order("gid DESC").First(&group).Error
+	err := r.db.Where("type = ?", groupType).Order("unixgid DESC").First(&group).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// No groups of this type found, return the minimum GID for this type
@@ -68,7 +68,7 @@ func (r *GroupRepository) GetLatestGID(groupType models.GroupType) (int, error) 
 	}
 	
 	// Return the next available GID (current highest + 1)
-	return group.GID + 1, nil
+	return group.UnixGID + 1, nil
 }
 
 // FindByID finds a group by ID
