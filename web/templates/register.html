@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Unixify</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .register-container {
+            max-width: 520px;
+            width: 100%;
+            padding: 2rem;
+        }
+        
+        .register-card {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            background-color: var(--card-bg);
+            overflow: hidden;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .register-header {
+            background: linear-gradient(45deg, #198754, #20c997);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .register-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .register-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        
+        .register-body {
+            padding: 2rem;
+            color: var(--text-color);
+        }
+        
+        .register-footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+        
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        /* Registration steps styling */
+        .registration-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .registration-steps::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--border-color);
+            z-index: 1;
+        }
+        
+        .step {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step.active {
+            background-color: #198754;
+            border-color: #198754;
+            color: white;
+        }
+        
+        .step.completed {
+            background-color: #198754;
+            border-color: #198754;
+            color: white;
+        }
+        
+        .step-label {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body data-requires-auth="false">
+    <!-- Theme toggle button -->
+    <button id="theme-toggle" class="btn btn-warning" title="Toggle dark/light mode">
+        <i class="bi bi-moon-stars-fill"></i> Theme
+    </button>
+    
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="register-logo">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+                <h4 class="register-title">Create Account</h4>
+                <p class="mb-0">Register for Unixify</p>
+            </div>
+            <div class="register-body">
+                <div id="registration-message" class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <span>Registration requires admin approval.</span>
+                </div>
+                
+                <!-- Registration Steps -->
+                <div class="registration-steps mb-4">
+                    <div class="step active" id="step1">
+                        1
+                        <span class="step-label">Account Details</span>
+                    </div>
+                    <div class="step" id="step2">
+                        2
+                        <span class="step-label">Email Verification</span>
+                    </div>
+                    <div class="step" id="step3">
+                        3
+                        <span class="step-label">Admin Approval</span>
+                    </div>
+                </div>
+                
+                <!-- Step 1: Registration Form -->
+                <div id="registration-step-1">
+                    <form id="registration-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first-name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first-name" name="firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last-name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last-name" name="lastName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="form-text">Choose a unique username. This will be used to log in.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="form-text">A verification email will be sent to this address.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Password must be at least 8 characters long and include a mix of letters, numbers, and symbols.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm-password" class="form-label">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                <input type="password" class="form-control" id="confirm-password" name="confirmPassword" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <select class="form-select" id="department" name="department">
+                                <option value="">Select a department</option>
+                                <option value="IT">IT</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="DevOps">DevOps</option>
+                                <option value="Security">Security</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100" id="register-btn">
+                            <i class="bi bi-check-circle"></i> Register Account
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Step 2: Email Verification (initially hidden) -->
+                <div id="registration-step-2" style="display: none;">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-envelope-check" style="font-size: 4rem; color: #198754;"></i>
+                        <h3 class="mt-3">Account Created</h3>
+                        <p>Your account has been created with the email address: <strong id="verification-email"></strong></p>
+                        <p>Please check your email for verification instructions.</p>
+                    </div>
+                    
+                    <div class="alert alert-success" id="verification-alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span>Account created successfully! A confirmation email has been sent.</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button id="simulate-verification" class="btn btn-primary">
+                            <i class="bi bi-arrow-right-circle"></i> Proceed to Next Step
+                        </button>
+                        <a href="http://localhost:8025" target="_blank" class="btn btn-outline-secondary">
+                            <i class="bi bi-envelope-open"></i> Check Email Inbox
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Admin Approval (initially hidden) -->
+                <div id="registration-step-3" style="display: none;">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-person-check" style="font-size: 4rem; color: #198754;"></i>
+                        <h3 class="mt-3">Almost Done!</h3>
+                        <p>Your account has been created and just needs admin approval.</p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span>For this demo, you can complete the registration immediately.</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button id="simulate-approval" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Complete Registration
+                        </button>
+                        <a href="/" class="btn btn-outline-primary">
+                            <i class="bi bi-house"></i> Continue to Homepage
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Registration Complete (initially hidden) -->
+                <div id="registration-complete" style="display: none;">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-check-circle-fill" style="font-size: 4rem; color: #198754;"></i>
+                        <h3 class="mt-3">Registration Complete!</h3>
+                        <p>Your account has been approved and is now active.</p>
+                        <p id="admin-status-message">You can now log in to the system.</p>
+                    </div>
+                    
+                    <div class="alert alert-success" id="permissions-alert">
+                        <i class="bi bi-unlock me-2"></i>
+                        <span>Your account has been approved.</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2" id="completion-buttons">
+                        <a href="/login" class="btn btn-primary" id="login-button">
+                            <i class="bi bi-box-arrow-in-right"></i> Go to Login
+                        </a>
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="bi bi-house"></i> Back to Homepage
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <p>Already have an account? <a href="/login">Log in here</a></p>
+                </div>
+            </div>
+            <div class="register-footer">
+                <p class="mb-0">Unixify &copy; 2025 - UNIX Account Management</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Password toggle
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const passwordInput = document.getElementById('password');
+            
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+                });
+            }
+            
+            // Registration form handling
+            const registrationForm = document.getElementById('registration-form');
+            const messageElement = document.getElementById('registration-message');
+            const registerBtn = document.getElementById('register-btn');
+            
+            // Add direct click handler to register button as a fallback
+            if (registerBtn) {
+                registerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    submitRegistrationForm();
+                });
+            }
+            
+            function submitRegistrationForm() {
+                // Get form values
+                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                // Basic validation
+                if (password !== confirmPassword) {
+                    messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Passwords do not match';
+                    messageElement.className = 'alert alert-danger mb-4';
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Password must be at least 8 characters long';
+                    messageElement.className = 'alert alert-danger mb-4';
+                    return;
+                }
+                
+                // Create user data
+                const userData = {
+                    username: username,
+                    email: email,
+                    firstName: document.getElementById('first-name').value,
+                    lastName: document.getElementById('last-name').value,
+                    department: document.getElementById('department').value,
+                    password: password
+                };
+                
+                // Store email for reference
+                localStorage.setItem('lastRegisteredEmail', email);
+                
+                // Send actual API request to create user
+                fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Registration response:", data);
+                    if (data.error) {
+                        // Show error message
+                        messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + data.error;
+                        messageElement.className = 'alert alert-danger mb-4';
+                        return;
+                    }
+                    
+                    // If successful, continue with the flow
+                    if (data.token) {
+                        // Store the token and user info
+                        localStorage.setItem('auth_token', data.token);
+                        localStorage.setItem('user_info', JSON.stringify(data.user));
+                        localStorage.removeItem('guest_token'); // Remove guest token if exists
+                    }
+                })
+                .catch(error => {
+                    console.error("Registration error:", error);
+                    messageElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Error during registration. Please try again.';
+                    messageElement.className = 'alert alert-danger mb-4';
+                    return;
+                });
+                
+                // Special handling for peter.frederikson@gmail.com
+                if (email === 'peter.frederikson@gmail.com') {
+                    document.getElementById('verification-alert').innerHTML = 
+                        '<i class="bi bi-shield-check me-2"></i>' +
+                        '<span><strong>ADMIN ACCOUNT DETECTED:</strong> Special registration process activated for admin account.</span>';
+                    
+                    console.log("Special admin account detected: " + email);
+                }
+                
+                // Move to step 2
+                document.getElementById('registration-step-1').style.display = 'none';
+                document.getElementById('registration-step-2').style.display = 'block';
+                document.getElementById('verification-email').textContent = email;
+                
+                // Update steps indicator
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step2').classList.add('active');
+            }
+            
+            if (registrationForm) {
+                registrationForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitRegistrationForm();
+                });
+            }
+            
+            // Simulate email verification
+            const simulateVerificationBtn = document.getElementById('simulate-verification');
+            if (simulateVerificationBtn) {
+                simulateVerificationBtn.addEventListener('click', function() {
+                    // Update user status in localStorage
+                    const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                    const email = localStorage.getItem('lastRegisteredEmail');
+                    
+                    // Find user with matching email and update status
+                    const userIndex = pendingUsers.findIndex(user => user.email === email);
+                    if (userIndex !== -1) {
+                        pendingUsers[userIndex].status = 'pending_approval';
+                        localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                        
+                        // Special handling for peter.frederikson@gmail.com
+                        if (email === 'peter.frederikson@gmail.com') {
+                            console.log("Special admin account detected in step 2: " + email);
+                            
+                            // Skip ahead to admin approval
+                            pendingUsers[userIndex].role = 'admin';
+                            localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                        }
+                    }
+                    
+                    // Move to step 3
+                    document.getElementById('registration-step-2').style.display = 'none';
+                    document.getElementById('registration-step-3').style.display = 'block';
+                    
+                    // Update steps indicator
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step2').classList.add('completed');
+                    document.getElementById('step3').classList.add('active');
+                });
+            }
+            
+            // Simulate admin approval
+            const simulateApprovalBtn = document.getElementById('simulate-approval');
+            if (simulateApprovalBtn) {
+                simulateApprovalBtn.addEventListener('click', function() {
+                    // Update user status in localStorage
+                    const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+                    const email = localStorage.getItem('lastRegisteredEmail');
+                    
+                    // Find user with matching email and update status
+                    const userIndex = pendingUsers.findIndex(user => user.email === email);
+                    if (userIndex !== -1) {
+                        pendingUsers[userIndex].status = 'active';
+                        
+                        // Move from pendingUsers to registeredUsers
+                        const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                        
+                        // Special case for peter.frederikson@gmail.com - make an admin
+                        if (pendingUsers[userIndex].email === 'peter.frederikson@gmail.com') {
+                            pendingUsers[userIndex].role = 'admin';
+                            // Auto login this user as admin
+                            localStorage.setItem('user_info', JSON.stringify(pendingUsers[userIndex]));
+                            localStorage.setItem('auth_token', 'admin_token_' + Date.now());
+                            localStorage.removeItem('guest_token');
+                            localStorage.setItem('admin_user_created', 'true');
+                            console.log("Admin access granted to: peter.frederikson@gmail.com");
+                        }
+                        
+                        registeredUsers.push(pendingUsers[userIndex]);
+                        pendingUsers.splice(userIndex, 1);
+                        
+                        localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+                        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                    }
+                    
+                    // Show completion screen
+                    document.getElementById('registration-step-3').style.display = 'none';
+                    document.getElementById('registration-complete').style.display = 'block';
+                    
+                    // Update steps indicator
+                    document.getElementById('step3').classList.remove('active');
+                    document.getElementById('step3').classList.add('completed');
+                    
+                    // Check if this is the special admin account
+                    if (email === 'peter.frederikson@gmail.com') {
+                        // Update admin status message
+                        document.getElementById('admin-status-message').innerHTML = 
+                            'You have been granted <strong>ADMIN ACCESS</strong> and are already logged in!';
+                        
+                        // Update permissions alert
+                        document.getElementById('permissions-alert').innerHTML = 
+                            '<i class="bi bi-shield-check me-2"></i>' +
+                            '<span><strong>ADMIN PRIVILEGES ACTIVATED:</strong> You have full administrative access to the system.</span>';
+                        
+                        // Hide login button, only show homepage button
+                        document.getElementById('login-button').style.display = 'none';
+                        document.getElementById('completion-buttons').innerHTML = 
+                            '<a href="/" class="btn btn-success">' +
+                            '<i class="bi bi-house"></i> Go to Homepage as Admin</a>';
+                    }
+                });
+            }
+            
+            // Resend email button (for demo, just shows a message)
+            const resendEmailBtn = document.getElementById('resend-email');
+            if (resendEmailBtn) {
+                resendEmailBtn.addEventListener('click', function() {
+                    const email = localStorage.getItem('lastRegisteredEmail');
+                    alert(`Verification email resent to ${email}`);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

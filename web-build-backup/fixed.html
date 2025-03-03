@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unixify - Fixed Version</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --navbar-bg: #212529;
+            --card-bg: #fff;
+            --modal-bg: #fff;
+            --modal-header-bg: #f8f9fa;
+            --table-header-bg: #0d6efd;
+            --table-header-color: white;
+            --table-row-hover: rgba(13, 110, 253, 0.05);
+            --table-row-odd: rgba(0, 0, 0, 0.02);
+            --form-bg: #fff;
+            --input-border: #ced4da;
+            --dropdown-bg: #fff;
+            --pre-bg: #f8f9fa;
+            --alert-bg-success: #d1e7dd;
+            --alert-text-success: #0f5132;
+            --alert-bg-danger: #f8d7da;
+            --alert-text-danger: #842029;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --modal-shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e4e6eb;
+            --navbar-bg: #1c1e22;
+            --card-bg: #242526;
+            --modal-bg: #242526;
+            --modal-header-bg: #2a2b2d;
+            --table-header-bg: #3a3b3c;
+            --table-header-color: #e4e6eb;
+            --table-row-hover: rgba(255, 255, 255, 0.05);
+            --table-row-odd: rgba(255, 255, 255, 0.03);
+            --form-bg: #3a3b3c;
+            --input-border: #4a4b4c;
+            --dropdown-bg: #2a2b2d;
+            --pre-bg: #3a3b3c;
+            --alert-bg-success: #132218;
+            --alert-text-success: #84c299;
+            --alert-bg-danger: #321c1e;
+            --alert-text-danger: #e08087;
+            --border-color: #4a4b4c;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --modal-shadow: rgba(0, 0, 0, 0.5);
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        .navbar {
+            background-color: var(--navbar-bg) !important;
+        }
+        
+        footer {
+            background-color: var(--card-bg);
+            padding: 1rem 0;
+        }
+        
+        footer p {
+            color: var(--text-color) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme toggle button -->
+    <button id="theme-toggle" class="btn btn-warning" style="position: fixed; top: 15px; right: 15px; z-index: 9999;" title="Toggle dark/light mode">
+        <i class="bi bi-moon-stars-fill"></i> Theme
+    </button>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-person-badge"></i> Unixify</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/people"><i class="bi bi-people-fill"></i> People</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/system"><i class="bi bi-gear-fill"></i> System</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/database"><i class="bi bi-database-fill"></i> Database</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/service"><i class="bi bi-hdd-rack-fill"></i> Service</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="jumbotron p-5 rounded shadow-sm mb-5">
+            <h1 class="display-4"><i class="bi bi-person-badge"></i> Unixify</h1>
+            <p class="lead">A comprehensive UNIX account UID and Group GID management system</p>
+            <hr class="my-4">
+            <p>Organize and manage your UNIX identities across different account types with a unified interface.</p>
+            <p class="d-flex gap-2">
+                <a href="/people" class="btn btn-primary btn-lg">Get Started</a>
+                <a href="#features" class="btn btn-outline-secondary">Learn More</a>
+            </p>
+        </div>
+
+        <div class="alert alert-success">
+            <h4>🎯 Fixed Version</h4>
+            <p>This page has all the fixes applied:</p>
+            <ul>
+                <li>✅ The footer text correctly shows "UNIX Team Management System"</li>
+                <li>✅ The theme toggle button is present in the top-right corner</li>
+                <li>✅ Theme switching works correctly with light and dark modes</li>
+                <li>✅ Theme preference is saved between page visits</li>
+            </ul>
+            <p>This standalone HTML file can be used for testing the UI.</p>
+        </div>
+
+        <div id="features" class="mb-5">
+            <h2 class="text-center mb-4">Features</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 h-100 border rounded shadow-sm">
+                        <div class="feature-icon mb-3 text-primary">
+                            <i class="bi bi-shield-check fs-1"></i>
+                        </div>
+                        <h3>Centralized Management</h3>
+                        <p>Manage all your UNIX accounts and groups in one place with proper UID/GID validation.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 h-100 border rounded shadow-sm">
+                        <div class="feature-icon mb-3 text-primary">
+                            <i class="bi bi-search fs-1"></i>
+                        </div>
+                        <h3>Advanced Search</h3>
+                        <p>Quickly find accounts and groups with comprehensive search functionality.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 h-100 border rounded shadow-sm">
+                        <div class="feature-icon mb-3 text-primary">
+                            <i class="bi bi-clock-history fs-1"></i>
+                        </div>
+                        <h3>Audit Logging</h3>
+                        <p>Track all changes with detailed audit logs for accountability and compliance.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-center mb-4">Management Sections</h2>
+        <div class="row mt-4 g-4">
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm" style="border-top: 4px solid #0d6efd;">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-people-fill fs-1" style="color: #0d6efd;"></i>
+                        </div>
+                        <h5 class="card-title">People</h5>
+                        <p class="card-text">Manage regular user accounts with UIDs in range 1000-60000.</p>
+                        <a href="/people" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right-circle"></i> Go to People
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm" style="border-top: 4px solid #198754;">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-gear-fill fs-1" style="color: #198754;"></i>
+                        </div>
+                        <h5 class="card-title">System</h5>
+                        <p class="card-text">Manage system accounts with UIDs in range 1-999.</p>
+                        <a href="/system" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right-circle"></i> Go to System
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm" style="border-top: 4px solid #dc3545;">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-database-fill fs-1" style="color: #dc3545;"></i>
+                        </div>
+                        <h5 class="card-title">Database</h5>
+                        <p class="card-text">Manage database accounts with UIDs in range 70000-79999.</p>
+                        <a href="/database" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right-circle"></i> Go to Database
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm" style="border-top: 4px solid #fd7e14;">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-hdd-rack-fill fs-1" style="color: #fd7e14;"></i>
+                        </div>
+                        <h5 class="card-title">Service</h5>
+                        <p class="card-text">Manage service accounts with UIDs in range 60001-65535.</p>
+                        <a href="/service" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right-circle"></i> Go to Service
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-3 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">Unixify &copy; 2025 - A UNIX Team Management System</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            // Get saved theme or use light as default
+            let currentTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            
+            // Update button based on current theme
+            updateButtonState(currentTheme);
+            
+            // Add click event to button
+            themeToggle.addEventListener('click', function() {
+                // Toggle theme
+                currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                // Apply theme
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                localStorage.setItem('theme', currentTheme);
+                
+                // Update button
+                updateButtonState(currentTheme);
+            });
+            
+            function updateButtonState(theme) {
+                if (theme === 'dark') {
+                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i> Light';
+                    themeToggle.classList.remove('btn-warning');
+                    themeToggle.classList.add('btn-light');
+                } else {
+                    themeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i> Theme';
+                    themeToggle.classList.remove('btn-light');
+                    themeToggle.classList.add('btn-warning');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

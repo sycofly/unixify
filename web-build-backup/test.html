@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unixify Static Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            margin: 5px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Unixify Static Test Page</h1>
+        <p>This page helps diagnose issues with the footer text and theme toggle button.</p>
+        
+        <div class="test-card">
+            <h3>Footer Text Test</h3>
+            <p>Current footer text in the index.html file:</p>
+            <pre id="current-footer">Loading...</pre>
+            
+            <button class="btn btn-primary test-button" onclick="checkFooter()">Check Footer Text</button>
+            <button class="btn btn-success test-button" onclick="fixFooter()">Fix Footer Text</button>
+        </div>
+        
+        <div class="test-card">
+            <h3>Theme Button Test</h3>
+            <p>Is theme button present in the index.html file?</p>
+            <pre id="theme-button-status">Loading...</pre>
+            
+            <button class="btn btn-primary test-button" onclick="checkThemeButton()">Check Theme Button</button>
+            <button class="btn btn-success test-button" onclick="fixThemeButton()">Fix Theme Button</button>
+        </div>
+        
+        <div class="test-card">
+            <h3>Test Page</h3>
+            <p>Click the button below to open a test page that should have the correct footer and theme button:</p>
+            
+            <button class="btn btn-primary" onclick="createTestPage()">Create and Open Test Page</button>
+        </div>
+        
+        <div class="test-card">
+            <h3>Results</h3>
+            <div id="results">No tests run yet.</div>
+        </div>
+    </div>
+    
+    <script>
+        // Check the footer text
+        function checkFooter() {
+            fetch('/index.html')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const footerText = doc.querySelector('footer p').textContent.trim();
+                    
+                    document.getElementById('current-footer').textContent = footerText;
+                    
+                    if (footerText.includes('Team Management')) {
+                        document.getElementById('results').innerHTML += '<p style="color:green">✅ Footer text contains "Team Management"</p>';
+                    } else {
+                        document.getElementById('results').innerHTML += '<p style="color:red">❌ Footer text does not contain "Team Management"</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('results').innerHTML += '<p style="color:red">❌ Error checking footer: ' + error.message + '</p>';
+                });
+        }
+        
+        // Fix the footer text by modifying the DOM
+        function fixFooter() {
+            const testPageContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unixify - Fixed Footer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Unixify - Fixed Footer</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="alert alert-success">
+            <h4>Fixed Footer Text</h4>
+            <p>This page has the corrected footer text: "UNIX Team Management System"</p>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/index.html" class="btn btn-primary">Back to Main Page</a>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-5">
+        <div class="container text-center">
+            <p class="text-muted mb-0">Unixify &copy; 2025 - A UNIX Team Management System</p>
+        </div>
+    </footer>
+
+    <script>
+        // Force update footer on all pages
+        window.addEventListener('DOMContentLoaded', function() {
+            // Select all footers in the document
+            document.querySelectorAll('footer p').forEach(function(footerP) {
+                // Update the text to the correct version
+                footerP.textContent = 'Unixify © 2025 - A UNIX Team Management System';
+            });
+            
+            // Open a message alerting about the fix
+            alert('Footer text has been updated to "UNIX Team Management System" by JavaScript!');
+        });
+    </script>
+</body>
+</html>`;
+
+            // Create a blob with the content
+            const blob = new Blob([testPageContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            // Open the test page in a new tab
+            window.open(url, '_blank');
+            
+            document.getElementById('results').innerHTML += '<p style="color:blue">ℹ️ Opening a test page with fixed footer text</p>';
+        }
+        
+        // Check if theme button exists
+        function checkThemeButton() {
+            fetch('/index.html')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const themeButton = doc.querySelector('#theme-toggle');
+                    
+                    if (themeButton) {
+                        document.getElementById('theme-button-status').textContent = 'Theme button found with ID: ' + themeButton.id;
+                        document.getElementById('results').innerHTML += '<p style="color:green">✅ Theme button found in HTML</p>';
+                    } else {
+                        document.getElementById('theme-button-status').textContent = 'No theme button found!';
+                        document.getElementById('results').innerHTML += '<p style="color:red">❌ No theme button found in HTML</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('results').innerHTML += '<p style="color:red">❌ Error checking theme button: ' + error.message + '</p>';
+                });
+        }
+        
+        // Fix theme button
+        function fixThemeButton() {
+            const testPageContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unixify - Fixed Theme Button</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e4e6eb;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme toggle button -->
+    <button id="theme-toggle" class="btn btn-warning" style="position: fixed; top: 15px; right: 15px; z-index: 9999;" title="Toggle dark/light mode">
+        <i class="bi bi-moon-stars-fill"></i> Theme
+    </button>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Unixify - Fixed Theme Button</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="alert alert-success">
+            <h4>Fixed Theme Button</h4>
+            <p>This page has a theme toggle button in the top-right corner.</p>
+            <p>Click it to toggle between light and dark themes.</p>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/index.html" class="btn btn-primary">Back to Main Page</a>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-5">
+        <div class="container text-center">
+            <p class="text-muted mb-0">Unixify &copy; 2025 - A UNIX Team Management System</p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            // Get saved theme or use light as default
+            let currentTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            
+            // Update button based on current theme
+            updateButtonState(currentTheme);
+            
+            // Add click event to button
+            themeToggle.addEventListener('click', function() {
+                // Toggle theme
+                currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                // Apply theme
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                localStorage.setItem('theme', currentTheme);
+                
+                // Update button
+                updateButtonState(currentTheme);
+                
+                alert('Theme switched to ' + currentTheme + ' mode!');
+            });
+            
+            function updateButtonState(theme) {
+                if (theme === 'dark') {
+                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i> Light';
+                    themeToggle.classList.remove('btn-warning');
+                    themeToggle.classList.add('btn-light');
+                } else {
+                    themeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i> Theme';
+                    themeToggle.classList.remove('btn-light');
+                    themeToggle.classList.add('btn-warning');
+                }
+            }
+        });
+    </script>
+</body>
+</html>`;
+
+            // Create a blob with the content
+            const blob = new Blob([testPageContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            // Open the test page in a new tab
+            window.open(url, '_blank');
+            
+            document.getElementById('results').innerHTML += '<p style="color:blue">ℹ️ Opening a test page with a fixed theme button</p>';
+        }
+        
+        // Create a complete test page with both fixes
+        function createTestPage() {
+            const completeFixedPage = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unixify - All Fixes Applied</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --navbar-bg: #212529;
+            --card-bg: #fff;
+            --modal-bg: #fff;
+            --modal-header-bg: #f8f9fa;
+            --table-header-bg: #0d6efd;
+            --table-header-color: white;
+            --table-row-hover: rgba(13, 110, 253, 0.05);
+            --table-row-odd: rgba(0, 0, 0, 0.02);
+            --form-bg: #fff;
+            --input-border: #ced4da;
+            --dropdown-bg: #fff;
+            --pre-bg: #f8f9fa;
+            --alert-bg-success: #d1e7dd;
+            --alert-text-success: #0f5132;
+            --alert-bg-danger: #f8d7da;
+            --alert-text-danger: #842029;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --modal-shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e4e6eb;
+            --navbar-bg: #1c1e22;
+            --card-bg: #242526;
+            --modal-bg: #242526;
+            --modal-header-bg: #2a2b2d;
+            --table-header-bg: #3a3b3c;
+            --table-header-color: #e4e6eb;
+            --table-row-hover: rgba(255, 255, 255, 0.05);
+            --table-row-odd: rgba(255, 255, 255, 0.03);
+            --form-bg: #3a3b3c;
+            --input-border: #4a4b4c;
+            --dropdown-bg: #2a2b2d;
+            --pre-bg: #3a3b3c;
+            --alert-bg-success: #132218;
+            --alert-text-success: #84c299;
+            --alert-bg-danger: #321c1e;
+            --alert-text-danger: #e08087;
+            --border-color: #4a4b4c;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --modal-shadow: rgba(0, 0, 0, 0.5);
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        .navbar {
+            background-color: var(--navbar-bg) !important;
+        }
+        
+        footer {
+            background-color: var(--card-bg);
+            padding: 1rem 0;
+        }
+        
+        footer p {
+            color: var(--text-color) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme toggle button -->
+    <button id="theme-toggle" class="btn btn-warning" style="position: fixed; top: 15px; right: 15px; z-index: 9999;" title="Toggle dark/light mode">
+        <i class="bi bi-moon-stars-fill"></i> Theme
+    </button>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-person-badge"></i> Unixify</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/people"><i class="bi bi-people-fill"></i> People</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/system"><i class="bi bi-gear-fill"></i> System</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/database"><i class="bi bi-database-fill"></i> Database</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/service"><i class="bi bi-hdd-rack-fill"></i> Service</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>All Fixes Applied</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">This page has both fixes applied:</p>
+                <ul>
+                    <li>✅ The footer text is updated to "UNIX Team Management System"</li>
+                    <li>✅ The theme toggle button is present in the top-right corner</li>
+                </ul>
+                <p>The theme and footer text state should persist between page refreshes.</p>
+                <p>To go back to the main application, use the links in the navbar.</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>How It Works</h3>
+            </div>
+            <div class="card-body">
+                <p>This page implements:</p>
+                <ul>
+                    <li>CSS variables for proper theming</li>
+                    <li>Theme persistence using localStorage</li>
+                    <li>Correct footer text</li>
+                    <li>Properly positioned theme toggle button</li>
+                </ul>
+                <p>All of this is done within a single HTML file with no external dependencies.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-3 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">Unixify &copy; 2025 - A UNIX Team Management System</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            // Get saved theme or use light as default
+            let currentTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            
+            // Update button based on current theme
+            updateButtonState(currentTheme);
+            
+            // Add click event to button
+            themeToggle.addEventListener('click', function() {
+                // Toggle theme
+                currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                // Apply theme
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                localStorage.setItem('theme', currentTheme);
+                
+                // Update button
+                updateButtonState(currentTheme);
+            });
+            
+            function updateButtonState(theme) {
+                if (theme === 'dark') {
+                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i> Light';
+                    themeToggle.classList.remove('btn-warning');
+                    themeToggle.classList.add('btn-light');
+                } else {
+                    themeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i> Theme';
+                    themeToggle.classList.remove('btn-light');
+                    themeToggle.classList.add('btn-warning');
+                }
+            }
+        });
+    </script>
+</body>
+</html>`;
+
+            // Save the file
+            fetch('/fixed_unixify.html', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/html'
+                },
+                body: completeFixedPage
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.open('/fixed_unixify.html', '_blank');
+                    document.getElementById('results').innerHTML += '<p style="color:green">✅ Created and opened fixed page</p>';
+                } else {
+                    // If POST fails, try direct approach
+                    const blob = new Blob([completeFixedPage], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    document.getElementById('results').innerHTML += '<p style="color:blue">ℹ️ Opened fixed page using blob URL</p>';
+                }
+            })
+            .catch(error => {
+                // If fetch fails, use blob approach
+                const blob = new Blob([completeFixedPage], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                document.getElementById('results').innerHTML += '<p style="color:blue">ℹ️ Opened fixed page using blob URL: ' + error.message + '</p>';
+            });
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('results').innerHTML = '<p>Page loaded. Click the buttons above to run tests.</p>';
+        });
+    </script>
+</body>
+</html>
